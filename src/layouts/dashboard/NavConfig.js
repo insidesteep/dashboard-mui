@@ -41,6 +41,26 @@ const navConfig = [
     path: '/404',
     icon: getIcon('eva:alert-triangle-fill'),
   },
+  {    
+  title: 'Категории',
+  path: '/dashboard/categories',
+  icon: getIcon('bxs:category'),
+  }, 
+  {    
+    title: 'Записи',
+    path: '/dashboard/posts',
+    icon: getIcon('bi:file-earmark-post-fill'),
+    },
+    {    
+      title: 'Фотогалерея',
+      path: '/dashboard/photogalleries',
+      icon: getIcon('clarity:image-gallery-solid'),
+      },
+      {    
+        title: 'Видеогалерея',
+        path: '/dashboard/videogalleries',
+        icon: getIcon('clarity:video-gallery-solid'),
+        }
 ];
 
 export default navConfig;

@@ -10,6 +10,11 @@ import NotFound from './pages/Page404';
 import Register from './pages/Register';
 import Products from './pages/Products';
 import DashboardApp from './pages/DashboardApp';
+import Posts from './pages/Posts';
+import CategoryList from './pages/CategoryList';
+import PhotoGalleryList from './pages/PhotoGalleryList';
+import VideoGalleryList from './pages/VideoGalleryList';
+import CreatePost from './pages/CreatePost';
 
 // ----------------------------------------------------------------------
 
@@ -23,6 +28,11 @@ export default function Router() {
         { path: 'user', element: <User /> },
         { path: 'products', element: <Products /> },
         { path: 'blog', element: <Blog /> },
+        { path: 'posts', element: <Posts /> },
+        { path: 'categories', element: <CategoryList /> },
+        { path: 'photogalleries', element: <PhotoGalleryList /> },
+        { path: 'videogalleries', element: <VideoGalleryList /> },
+        { path: 'posts/create', element: <CreatePost /> },
       ],
     },
     {

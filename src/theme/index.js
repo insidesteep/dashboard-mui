@@ -23,6 +23,18 @@ export default function ThemeProvider({ children }) {
       typography,
       shadows,
       customShadows,
+      components: {
+        MUIRichTextEditor: {
+          root: {
+            marginTop: 20,
+            width: "80%"
+        },
+        editor: {
+            height: "500px",
+            borderBottom: "1px solid gray" 
+        }
+        }
+      }
     }),
     []
   );
