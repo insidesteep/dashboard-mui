@@ -30,7 +30,7 @@ import SearchNotFound from '../components/SearchNotFound';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
 // mock
 import PHOTOGALLERIES from '../_mock/photogalleries';
-import CreatePhotogalleryModal from '../layouts/dashboard/CreateVideogalleryModal';
+import CreatePhotogalleryModal from '../layouts/dashboard/CreatePhotogalleryModal';
 
 // ----------------------------------------------------------------------
 
