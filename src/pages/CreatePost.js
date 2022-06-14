@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import * as Yup from 'yup';
-import { useFormik, Form, FormikProvider } from 'formik';
-import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
-import { Link as RouterLink } from 'react-router-dom';
-import { createTheme, ThemeProvider } from '@mui/material/styles'
-import MUIRichTextEditor from 'mui-rte'
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { useEffect, useRef, useState } from "react";
+import * as Yup from "yup";
+import { useFormik, Form, FormikProvider } from "formik";
+import { filter } from "lodash";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import MUIRichTextEditor from "mui-rte";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { Editor } from "@tinymce/tinymce-react";
 
 // material
 import {
@@ -28,45 +28,57 @@ import {
   Tabs,
   Tab,
   Select,
-  MenuItem
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { TabPanel, TabList, TabContext, LoadingButton } from '@mui/lab';
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { TabPanel, TabList, TabContext, LoadingButton } from "@mui/lab";
 // components
-import Page from '../components/Page';
-import Label from '../components/Label';
-import Scrollbar from '../components/Scrollbar';
-import Iconify from '../components/Iconify';
-import SearchNotFound from '../components/SearchNotFound';
-import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
+import Page from "../components/Page";
+import Label from "../components/Label";
+import Scrollbar from "../components/Scrollbar";
+import Iconify from "../components/Iconify";
+import SearchNotFound from "../components/SearchNotFound";
+import {
+  UserListHead,
+  UserListToolbar,
+  UserMoreMenu,
+} from "../sections/@dashboard/user";
 // mock
-import VIDEOGALLERIES from '../_mock/videogalleries';
+import VIDEOGALLERIES from "../_mock/videogalleries";
+import { AUTH_TOKEN } from "src/redux/constants/auth";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  showLoadingCategoryList,
+  categoryList,
+} from "../redux/actions/category";
+import { showLoadingpostCreate, postCreate } from "../redux/actions/post";
+import { API_BASE_URL } from "src/config/AppConfig";
 
 // ----------------------------------------------------------------------
 
 const defaultTheme = createTheme();
 
-
 Object.assign(defaultTheme, {
   overrides: {
-      MUIRichTextEditor: {
-          root: {
-              marginTop: 20,
-          },
-          editor: {
-            height: "450px",
-              borderBottom: "1px solid gray" 
-          }
-      }
-  }
-})
-
+    MUIRichTextEditor: {
+      root: {
+        marginTop: 20,
+      },
+      editor: {
+        height: "450px",
+        borderBottom: "1px solid gray",
+      },
+    },
+  },
+});
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Название', alignRight: false },
-  { id: 'date', label: 'Дата создания', alignRight: false },
-  { id: 'images', label: 'Видео', alignRight: false },
-  { id: '' },
+  { id: "name", label: "Название", alignRight: false },
+  { id: "date", label: "Дата создания", alignRight: false },
+  { id: "images", label: "Видео", alignRight: false },
+  { id: "" },
 ];
 
 // ----------------------------------------------------------------------
@@ -82,7 +94,7 @@ function descendingComparator(a, b, orderBy) {
 }
 
 function getComparator(order, orderBy) {
-  return order === 'desc'
+  return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
@@ -95,48 +107,113 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(
+      array,
+      (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+    );
   }
   return stabilizedThis.map((el) => el[0]);
 }
 
+const API_URL = "https://emir-city.uz/api/photo/upload";
+
 export default function User() {
   const [page, setPage] = useState(0);
 
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState("asc");
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState("name");
 
-  const [filterName, setFilterName] = useState('');
+  const [filterName, setFilterName] = useState("");
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const [value, setValue] = useState("1")
+  const [content, setContent] = useState({ uz: "", ru: "", en: "" });
+
+  const [value, setValue] = useState("1");
+
+  const { categories } = useSelector((state) => state.category);
+  const { loading: createLoading } = useSelector((state) => state.post);
+
+  const dispatch = useDispatch();
+  const editorRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {}, []);
 
   const CreatePostSchema = Yup.object().shape({
-    title: Yup.string().required('Заполните поле'),
-    category: Yup.string().required('Выберите категорию'),
+    category: Yup.string().required("Выберите категорию"),
+    titleUz: Yup.string().required("Заполните поле"),
+    titleRu: Yup.string().required("Заполните поле"),
+    titleEn: Yup.string().required("Заполните поле"),
   });
-
 
   const formik = useFormik({
     initialValues: {
-      title: '',
-      category: '',
-      content: '',
+      category: "",
+      titleUz: "",
+      titleRu: "",
+      titleEn: "",
     },
     validationSchema: CreatePostSchema,
-   
+    onSubmit: (values) => {
+      const newData = {
+        category_id: values.category,
+        uz: [
+          {
+            title: values.titleUz,
+            description: content.uz,
+          },
+        ],
+        ru: [
+          {
+            title: values.titleRu,
+            description: content.ru,
+          },
+        ],
+        en: [
+          {
+            title: values.titleEn,
+            description: content.en,
+          },
+        ],
+      };
+
+      dispatch(showLoadingpostCreate());
+      dispatch(postCreate(newData, () => navigate(-1)));
+    },
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
+  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } =
+    formik;
 
+  const getCategoryByLang = (category) => {
+    if (value == "1") return category.category_name_uz;
+
+    if (value == "2") return category.category_name_ru;
+
+    return category.category_name_en;
+  };
+
+  const handleChangeContent = (content) => {
+    switch (value) {
+      case "1":
+        setContent((prevState) => ({ ...prevState, uz: content }));
+        break;
+      case "2":
+        setContent((prevState) => ({ ...prevState, ru: content }));
+        break;
+
+      default:
+        setContent((prevState) => ({ ...prevState, en: content }));
+    }
+  };
 
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
@@ -159,7 +236,10 @@ export default function User() {
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
     }
     setSelected(newSelected);
   };
@@ -177,9 +257,16 @@ export default function User() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - VIDEOGALLERIES.length) : 0;
+  const emptyRows =
+    page > 0
+      ? Math.max(0, (1 + page) * rowsPerPage - VIDEOGALLERIES.length)
+      : 0;
 
-  const filteredUsers = applySortFilter(VIDEOGALLERIES, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(
+    VIDEOGALLERIES,
+    getComparator(order, orderBy),
+    filterName
+  );
 
   const isUserNotFound = filteredUsers.length === 0;
 
@@ -187,84 +274,362 @@ export default function User() {
     setValue(newValue);
   };
 
-
   return (
     <Page name="User">
       <Container>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h4" gutterBottom>
-            Новая запись
-          </Typography>
-        </Stack>
+        <FormikProvider value={formik}>
+          <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              mb={5}
+            >
+              <Typography variant="h4" gutterBottom>
+                Новая запись
+              </Typography>
+              <LoadingButton
+                size="large"
+                type="submit"
+                variant="contained"
+                loading={createLoading}
+              >
+                Создать
+              </LoadingButton>
+            </Stack>
 
-        <Card>  
-          <TabContext value={value}>
-        <TabList onChange={handleChange} aria-label="basic tabs example">
-          <Tab value="1" label={<Avatar src='/static/icons/uz.svg' variant='square' sx={{width: 20, height: 12}}/>}/>
-          <Tab value="2" label={<Avatar src='/static/icons/ru.svg' variant='square' sx={{width: 20, height: 12}}/>}/>
-          <Tab value="3" label={<Avatar src='/static/icons/us.svg' variant='square' sx={{width: 20, height: 12}}/>}/>
-        </TabList>
-        <TabPanel value={"1"}>
-          <FormikProvider value={formik}>
-            <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                <TextField
-                  fullWidth
-                  autoComplete="username"
-                  label="Введите заголовок"
-                  {...getFieldProps('title')}
-                  error={Boolean(touched.title && errors.title)}
-                  helperText={touched.title && errors.title}
-                />
-                <TextField
-                  fullWidth
-                  autoComplete="username"
-                  label="Выберите заголовок"
-                  select
-                  {...getFieldProps('category')}
-                  error={Boolean(touched.category && errors.category)}
-                  helperText={touched.category && errors.category}
+            <Card>
+              <TabContext value={value}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  mb={5}
+                  p={2}
                 >
-                  <MenuItem value={10}>Ten</MenuItem>
-                  <MenuItem value={20}>Twenty</MenuItem>
-                  <MenuItem value={30}>Thirty</MenuItem>
-                </TextField>
-                <ThemeProvider theme={defaultTheme}>
-                <MUIRichTextEditor label="Start typing..." />
-                </ThemeProvider>
-                <CKEditor
-                    editor={ ClassicEditor }
-                    data="<p>Hello from CKEditor 5!</p>"
-                    onReady={ editor => {
-                        // You can store the "editor" and use when it is needed.
-                        console.log( 'Editor is ready to use!', editor );
-                    } }
-                    onChange={ ( event, editor ) => {
-                        const data = editor.getData();
-                        console.log( { event, editor, data } );
-                    } }
-                    onBlur={ ( event, editor ) => {
-                        console.log( 'Blur.', editor );
-                    } }
-                    onFocus={ ( event, editor ) => {
-                        console.log( 'Focus.', editor );
-                    } }
-                />
-                <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
-                  Создать
-                </LoadingButton>
-              </Stack>
-            </Form>
-          </FormikProvider>
-        </TabPanel>
-        <TabPanel value={"2"}>
-          Item 2
-        </TabPanel>
-        <TabPanel value={"3"}>
-          Item 3
-        </TabPanel>
-        </TabContext>
-        </Card>
+                  <TabList
+                    onChange={handleChange}
+                    aria-label="basic tabs example"
+                  >
+                    <Tab
+                      value="1"
+                      label={
+                        <Avatar
+                          src="/static/icons/uz.svg"
+                          variant="square"
+                          sx={{ width: 20, height: 12 }}
+                        />
+                      }
+                    />
+                    <Tab
+                      value="2"
+                      label={
+                        <Avatar
+                          src="/static/icons/ru.svg"
+                          variant="square"
+                          sx={{ width: 20, height: 12 }}
+                        />
+                      }
+                    />
+                    <Tab
+                      value="3"
+                      label={
+                        <Avatar
+                          src="/static/icons/us.svg"
+                          variant="square"
+                          sx={{ width: 20, height: 12 }}
+                        />
+                      }
+                    />
+                  </TabList>
+                  <FormControl>
+                    <InputLabel id="category-label-id">Категория</InputLabel>
+                    <Select
+                      onOpen={() => {
+                        dispatch(categoryList());
+                      }}
+                      sx={{ width: 200 }}
+                      labelId="category-label-id"
+                      label="Выберите категорию"
+                      select
+                      {...getFieldProps("category")}
+                      error={Boolean(touched.category && errors.category)}
+                      helperText={touched.category && errors.category}
+                    >
+                      {categories.data.map((c) => (
+                        <MenuItem key={c.id} value={c.id}>
+                          {getCategoryByLang(c)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  ,
+                </Stack>
+                <TabPanel value={"1"}>
+                  <Stack spacing={3}>
+                    <TextField
+                      fullWidth
+                      autoComplete="username"
+                      label="Введите заголовок"
+                      {...getFieldProps("titleUz")}
+                      error={Boolean(touched.titleUz && errors.titleUz)}
+                      helperText={touched.titleUz && errors.titleUz}
+                    />
+                    <Editor
+                      // tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      apiKey="jmurcpps294xm8lwiqcs2igjc9x3htuxixlil2z8kp9ofc4s"
+                      onInit={(evt, editor) => (editorRef.current = editor)}
+                      initialValue="<p>This is the initial content of the editor.</p>"
+                      init={{
+                        height: 500,
+                        menubar: false,
+                        plugins: ["image"],
+                        toolbar:
+                          "undo redo | blocks | " +
+                          "bold italic forecolor | alignleft aligncenter " +
+                          "alignright alignjustify | bullist numlist outdent indent | " +
+                          "removeformat | image| help",
+
+                        images_upload_handler: (blobInfo, progress) =>
+                          new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.withCredentials = false;
+                            xhr.open("POST", API_URL);
+                            xhr.setRequestHeader(
+                              "Authorization",
+                              `Bearer ${localStorage.getItem(AUTH_TOKEN)}`
+                            );
+
+                            xhr.upload.onprogress = (e) => {
+                              progress((e.loaded / e.total) * 100);
+                            };
+
+                            xhr.onload = () => {
+                              if (xhr.status === 403) {
+                                reject({
+                                  message: "HTTP Error: " + xhr.status,
+                                  remove: true,
+                                });
+                                return;
+                              }
+
+                              if (xhr.status < 200 || xhr.status >= 300) {
+                                reject("HTTP Error: " + xhr.status);
+                                return;
+                              }
+
+                              const json = JSON.parse(xhr.responseText);
+
+                              if (!json || typeof json.photo_url != "string") {
+                                reject("Invalid JSON: " + xhr.responseText);
+                                return;
+                              }
+
+                              resolve(`${API_BASE_URL}/${json.photo_url}`);
+                            };
+
+                            xhr.onerror = () => {
+                              reject(
+                                "Image upload failed due to a XHR Transport error. Code: " +
+                                  xhr.status
+                              );
+                            };
+
+                            const formData = new FormData();
+                            formData.append(
+                              "posts_images",
+                              blobInfo.blob(),
+                              blobInfo.filename()
+                            );
+
+                            xhr.send(formData);
+                          }),
+                        // images_upload_handler: () => console.log(2),
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                      }}
+                      onEditorChange={handleChangeContent}
+                    />
+                  </Stack>
+                </TabPanel>
+                <TabPanel value={"2"}>
+                  <Stack spacing={3}>
+                    <TextField
+                      fullWidth
+                      autoComplete="username"
+                      label="Введите заголовок"
+                      {...getFieldProps("titleRu")}
+                      error={Boolean(touched.titleRu && errors.titleRu)}
+                      helperText={touched.titleRu && errors.titleRu}
+                    />
+                  </Stack>
+                  <Editor
+                    // tinymceScriptSrc="/tinymce/tinymce.min.js"
+                    apiKey="jmurcpps294xm8lwiqcs2igjc9x3htuxixlil2z8kp9ofc4s"
+                    onInit={(evt, editor) => (editorRef.current = editor)}
+                    initialValue="<p>This is the initial content of the editor.</p>"
+                    init={{
+                      height: 500,
+                      menubar: false,
+                      plugins: ["image"],
+                      toolbar:
+                        "undo redo | blocks | " +
+                        "bold italic forecolor | alignleft aligncenter " +
+                        "alignright alignjustify | bullist numlist outdent indent | " +
+                        "removeformat | image| help",
+
+                      images_upload_handler: (blobInfo, progress) =>
+                        new Promise((resolve, reject) => {
+                          const xhr = new XMLHttpRequest();
+                          xhr.withCredentials = false;
+                          xhr.open("POST", API_URL);
+                          xhr.setRequestHeader(
+                            "Authorization",
+                            `Bearer ${localStorage.getItem(AUTH_TOKEN)}`
+                          );
+
+                          xhr.upload.onprogress = (e) => {
+                            progress((e.loaded / e.total) * 100);
+                          };
+
+                          xhr.onload = () => {
+                            if (xhr.status === 403) {
+                              reject({
+                                message: "HTTP Error: " + xhr.status,
+                                remove: true,
+                              });
+                              return;
+                            }
+
+                            if (xhr.status < 200 || xhr.status >= 300) {
+                              reject("HTTP Error: " + xhr.status);
+                              return;
+                            }
+
+                            const json = JSON.parse(xhr.responseText);
+
+                            if (!json || typeof json.photo_url != "string") {
+                              reject("Invalid JSON: " + xhr.responseText);
+                              return;
+                            }
+
+                            resolve(`${API_BASE_URL}/${json.photo_url}`);
+                          };
+
+                          xhr.onerror = () => {
+                            reject(
+                              "Image upload failed due to a XHR Transport error. Code: " +
+                                xhr.status
+                            );
+                          };
+
+                          const formData = new FormData();
+                          formData.append(
+                            "posts_images",
+                            blobInfo.blob(),
+                            blobInfo.filename()
+                          );
+
+                          xhr.send(formData);
+                        }),
+                      // images_upload_handler: () => console.log(2),
+                      content_style:
+                        "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                    }}
+                    onEditorChange={handleChangeContent}
+                  />
+                </TabPanel>
+                <TabPanel value={"3"}>
+                  <Stack spacing={3}>
+                    <TextField
+                      fullWidth
+                      autoComplete="username"
+                      label="Введите заголовок"
+                      {...getFieldProps("titleEn")}
+                      error={Boolean(touched.titleEn && errors.titleEn)}
+                      helperText={touched.titleEn && errors.titleEn}
+                    />
+                    <Editor
+                      // tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      apiKey="jmurcpps294xm8lwiqcs2igjc9x3htuxixlil2z8kp9ofc4s"
+                      onInit={(evt, editor) => (editorRef.current = editor)}
+                      initialValue="<p>This is the initial content of the editor.</p>"
+                      init={{
+                        height: 500,
+                        menubar: false,
+                        plugins: ["image"],
+                        toolbar:
+                          "undo redo | blocks | " +
+                          "bold italic forecolor | alignleft aligncenter " +
+                          "alignright alignjustify | bullist numlist outdent indent | " +
+                          "removeformat | image| help",
+
+                        images_upload_handler: (blobInfo, progress) =>
+                          new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.withCredentials = false;
+                            xhr.open("POST", API_URL);
+                            xhr.setRequestHeader(
+                              "Authorization",
+                              `Bearer ${localStorage.getItem(AUTH_TOKEN)}`
+                            );
+
+                            xhr.upload.onprogress = (e) => {
+                              progress((e.loaded / e.total) * 100);
+                            };
+
+                            xhr.onload = () => {
+                              if (xhr.status === 403) {
+                                reject({
+                                  message: "HTTP Error: " + xhr.status,
+                                  remove: true,
+                                });
+                                return;
+                              }
+
+                              if (xhr.status < 200 || xhr.status >= 300) {
+                                reject("HTTP Error: " + xhr.status);
+                                return;
+                              }
+
+                              const json = JSON.parse(xhr.responseText);
+
+                              if (!json || typeof json.photo_url != "string") {
+                                reject("Invalid JSON: " + xhr.responseText);
+                                return;
+                              }
+
+                              resolve(`${API_BASE_URL}/${json.photo_url}`);
+                            };
+
+                            xhr.onerror = () => {
+                              reject(
+                                "Image upload failed due to a XHR Transport error. Code: " +
+                                  xhr.status
+                              );
+                            };
+
+                            const formData = new FormData();
+                            formData.append(
+                              "posts_images",
+                              blobInfo.blob(),
+                              blobInfo.filename()
+                            );
+
+                            xhr.send(formData);
+                          }),
+                        // images_upload_handler: () => console.log(2),
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                      }}
+                      onEditorChange={handleChangeContent}
+                    />
+                  </Stack>
+                </TabPanel>
+              </TabContext>
+            </Card>
+          </Form>
+        </FormikProvider>
       </Container>
     </Page>
   );
