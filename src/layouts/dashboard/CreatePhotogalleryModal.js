@@ -13,7 +13,10 @@ import {
   Backdrop,
   CircularProgress,
   Typography,
+  ImageListItemBar,
+  IconButton,
 } from "@mui/material";
+import { DeleteOutline } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import { AddPhotoAlternate } from "@mui/icons-material";
 import * as Yup from "yup";
@@ -29,6 +32,7 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
   const [imageURLs, setImageURLs] = useState([]);
 
   const { loading } = useSelector((state) => state.photogallery);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -36,7 +40,12 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
 
     const newImageURLs = [];
 
-    images.forEach((img) => newImageURLs.push(URL.createObjectURL(img)));
+    images.forEach((img) =>
+      newImageURLs.push({
+        name: img.name,
+        src: URL.createObjectURL(img),
+      })
+    );
     setImageURLs(newImageURLs);
   }, [images]);
 
@@ -65,7 +74,12 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
     onSubmit: (values) => {
       if (images.length) {
         const formData = new FormData();
-        images.forEach((img) => formData.append("images[]", img));
+
+        formData.append("tittle_uz", values.titleUz);
+        formData.append("tittle_ru", values.titleUz);
+        formData.append("tittle_en", values.titleEn);
+
+        images.forEach((img) => formData.append("gallery_images[]", img));
 
         dispatch(showLoadingPhotogalleryCreate());
         dispatch(photogalleryCreate(formData, handleClose));
@@ -76,11 +90,21 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
   const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } =
     formik;
 
+  const onRemoveImg = (name) => {
+    const urls = imageURLs.filter((img) => img.name != name);
+    const imgs = images.filter((img) => img.name != name);
+
+    console.log(urls, imgs);
+
+    setImages(imgs);
+    setImageURLs(urls);
+  };
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <FormikProvider value={formik}>
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-          <DialogTitle>Новая фотогаллерея</DialogTitle>
+          <DialogTitle>Новая фотогалерея</DialogTitle>
           <DialogContent>
             <Stack spacing={3}>
               <TextField
@@ -88,7 +112,7 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
                 autoFocus
                 margin="dense"
                 id="name"
-                label="Название категории на узбекском"
+                label="Название галереи на узбекском"
                 fullWidth
                 sx={{
                   mr: "20px",
@@ -103,7 +127,7 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
                 prefix="2"
                 margin="dense"
                 id="name"
-                label="Название категории на русском"
+                label="Название галереи на русском"
                 fullWidth
                 sx={{
                   mr: "20px",
@@ -118,7 +142,7 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
                 prefix="2"
                 margin="dense"
                 id="name"
-                label="Название категории на английском"
+                label="Название галереи на английском"
                 fullWidth
                 sx={{
                   mr: "20px",
@@ -147,13 +171,25 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
                 </Button>
               </label>
               <ImageList cols={3}>
-                {imageURLs.map((url) => (
-                  <ImageListItem key={url}>
+                {imageURLs.map(({ name, src }) => (
+                  <ImageListItem key={src}>
                     <img
-                      src={`${url}`}
-                      srcSet={`${url}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                      alt={url}
+                      src={`${src}`}
+                      srcSet={`${src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                      alt={src}
                       loading="lazy"
+                    />
+                    <ImageListItemBar
+                      position="top"
+                      actionIcon={
+                        <IconButton
+                          onClick={() => onRemoveImg(name)}
+                          sx={{ color: "white" }}
+                          aria-label={`star ${src}`}
+                        >
+                          <DeleteOutline />
+                        </IconButton>
+                      }
                     />
                   </ImageListItem>
                 ))}
@@ -162,7 +198,7 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Закрыть</Button>
-            <LoadingButton type="submit" variant="contained" loading={loading}>
+            <LoadingButton type="submit" variant="contained">
               Создать
             </LoadingButton>
           </DialogActions>

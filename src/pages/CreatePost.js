@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 import { useFormik, Form, FormikProvider } from "formik";
-import { filter } from "lodash";
+import { filter, set } from "lodash";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import MUIRichTextEditor from "mui-rte";
@@ -31,6 +31,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  FormHelperText,
+  Input,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { TabPanel, TabList, TabContext, LoadingButton } from "@mui/lab";
@@ -55,6 +57,7 @@ import {
 } from "../redux/actions/category";
 import { showLoadingpostCreate, postCreate } from "../redux/actions/post";
 import { API_BASE_URL } from "src/config/AppConfig";
+import axios from "axios";
 
 // ----------------------------------------------------------------------
 
@@ -133,6 +136,7 @@ export default function User() {
   const [content, setContent] = useState({ uz: "", ru: "", en: "" });
 
   const [value, setValue] = useState("1");
+  const [thumbnail, setThumbnail] = useState({ src: "", loading: false });
 
   const { categories } = useSelector((state) => state.category);
   const { loading: createLoading } = useSelector((state) => state.post);
@@ -148,6 +152,7 @@ export default function User() {
     titleUz: Yup.string().required("Заполните поле"),
     titleRu: Yup.string().required("Заполните поле"),
     titleEn: Yup.string().required("Заполните поле"),
+    thumbnail: Yup.mixed().transform((value) => console.log(value)),
   });
 
   const formik = useFormik({
@@ -156,6 +161,7 @@ export default function User() {
       titleUz: "",
       titleRu: "",
       titleEn: "",
+      thumbnail: null,
     },
     validationSchema: CreatePostSchema,
     onSubmit: (values) => {
@@ -188,6 +194,29 @@ export default function User() {
 
   const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } =
     formik;
+
+  const uploadThumbnail = async (file) => {
+    setThumbnail((prev) => ({ ...prev, loading: true }));
+
+    const formData = new FormData();
+
+    formData.append("posts_images", file);
+
+    const response = await axios({
+      method: "post",
+      url: API_URL,
+      data: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem(AUTH_TOKEN)}`,
+      },
+    });
+
+    if (response.status != 200) {
+      setThumbnail((prev) => ({ ...prev, loading: false }));
+    }
+
+    setThumbnail({ src: response.data.photo_url, loading: false });
+  };
 
   const getCategoryByLang = (category) => {
     if (value == "1") return category.category_name_uz;
@@ -342,28 +371,64 @@ export default function User() {
                       }
                     />
                   </TabList>
-                  <FormControl>
-                    <InputLabel id="category-label-id">Категория</InputLabel>
-                    <Select
-                      onOpen={() => {
-                        dispatch(categoryList());
-                      }}
-                      sx={{ width: 200 }}
-                      labelId="category-label-id"
-                      label="Выберите категорию"
-                      select
-                      {...getFieldProps("category")}
-                      error={Boolean(touched.category && errors.category)}
-                      helperText={touched.category && errors.category}
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <FormControl
+                      error={Boolean(touched.thumbnail && errors.thumbnail)}
                     >
-                      {categories.data.map((c) => (
-                        <MenuItem key={c.id} value={c.id}>
-                          {getCategoryByLang(c)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  ,
+                      <label htmlFor="contained-button-file">
+                        <Input
+                          accept="image/*"
+                          id="contained-button-file"
+                          type="file"
+                          style={{ display: "none" }}
+                          aria-describedby="thumbnail"
+                          {...getFieldProps("thumbnail")}
+                          onChange={(e) => {
+                            uploadThumbnail(e.target.files[0]);
+                            getFieldProps("thumbnail").onChange(e);
+                          }}
+                        />
+                        <LoadingButton
+                          variant="contained"
+                          component="span"
+                          loading={thumbnail.loading}
+                        >
+                          Изображение записи
+                        </LoadingButton>
+                        {Boolean(touched.thumbnail && errors.thumbnail) && (
+                          <FormHelperText id="thumbnail">
+                            {errors.thumbnail}
+                          </FormHelperText>
+                        )}
+                      </label>
+                    </FormControl>
+                    <FormControl>
+                      <InputLabel id="category-label-id">Категория</InputLabel>
+                      <Select
+                        onOpen={() => {
+                          dispatch(categoryList());
+                        }}
+                        sx={{ width: 200 }}
+                        labelId="category-label-id"
+                        label="Выберите категорию"
+                        select
+                        {...getFieldProps("category")}
+                        error={Boolean(touched.category && errors.category)}
+                        helperText={touched.category && errors.category}
+                      >
+                        {categories.data.map((c) => (
+                          <MenuItem key={c.id} value={c.id}>
+                            {getCategoryByLang(c)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                </Stack>
+                <Stack m={2}>
+                  {thumbnail.src && (
+                    <img width="100%" src={API_BASE_URL + thumbnail.src} />
+                  )}
                 </Stack>
                 <TabPanel value={"1"}>
                   <Stack spacing={3}>
