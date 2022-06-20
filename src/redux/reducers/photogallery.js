@@ -11,7 +11,7 @@ const initState = {
   error: false,
   photogallery: {
     loading: false,
-    data: [],
+    data: null,
   },
 };
 

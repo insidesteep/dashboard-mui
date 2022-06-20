@@ -12,7 +12,7 @@ Photogallery.create = (data) => {
 
 Photogallery.list = () => {
   return fetch({
-    url: "/api/posts",
+    url: "/api/gallery",
     method: "get",
   });
 };

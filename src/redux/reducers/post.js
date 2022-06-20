@@ -11,7 +11,7 @@ const initState = {
   error: false,
   posts: {
     loading: false,
-    data: [],
+    data: null,
   },
 };
 

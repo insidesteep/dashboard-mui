@@ -18,6 +18,7 @@ import {
   TableContainer,
   TablePagination,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 // components
@@ -32,7 +33,9 @@ import {
   UserMoreMenu,
 } from "../sections/@dashboard/user";
 // mock
-import POSTS from "../_mock/posts";
+import { useDispatch, useSelector } from "react-redux";
+import { showLoadingpostList, postList } from "../redux/actions/post";
+import { useEffect } from "react";
 
 // ----------------------------------------------------------------------
 
@@ -65,6 +68,8 @@ function getComparator(order, orderBy) {
 }
 
 function applySortFilter(array, comparator, query) {
+  if (!array) return [];
+
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -93,7 +98,15 @@ export default function User() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const dispatch = useDispatch();
+  const { posts } = useSelector((state) => state.post);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(showLoadingpostList());
+    dispatch(postList());
+  }, []);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -103,7 +116,7 @@ export default function User() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = POSTS.map((n) => n.title);
+      const newSelecteds = posts.data.option.map((n) => n.title);
       setSelected(newSelecteds);
       return;
     }
@@ -142,10 +155,10 @@ export default function User() {
   };
 
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - POSTS.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - posts.data?.option.length) : 0;
 
   const filteredUsers = applySortFilter(
-    POSTS,
+    posts.data.option,
     getComparator(order, orderBy),
     filterName
   );
@@ -180,131 +193,156 @@ export default function User() {
             filterName={filterName}
             onFilterName={handleFilterByName}
           />
+          <Stack justifyContent="center" alignItems="center">
+            {posts.loading ? (
+              <>
+                <Scrollbar>
+                  <TableContainer sx={{ minWidth: 800 }}>
+                    <Table>
+                      <UserListHead
+                        order={order}
+                        orderBy={orderBy}
+                        headLabel={TABLE_HEAD}
+                        rowCount={posts.data ? posts.data.all_items : 0}
+                        numSelected={selected.length}
+                        onRequestSort={handleRequestSort}
+                        onSelectAllClick={handleSelectAllClick}
+                      />
+                      <TableBody>
+                        {filteredUsers
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row) => {
+                            const { id, title, category, date, uz, ru, en } =
+                              row;
+                            const isItemSelected =
+                              selected.indexOf(title) !== -1;
 
-          <Scrollbar>
-            <TableContainer sx={{ minWidth: 800 }}>
-              <Table>
-                <UserListHead
-                  order={order}
-                  orderBy={orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={POSTS.length}
-                  numSelected={selected.length}
-                  onRequestSort={handleRequestSort}
-                  onSelectAllClick={handleSelectAllClick}
-                />
-                <TableBody>
-                  {filteredUsers
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      const { id, title, category, date, uz, ru, en } = row;
-                      const isItemSelected = selected.indexOf(title) !== -1;
-
-                      return (
-                        <TableRow
-                          hover
-                          key={id}
-                          tabIndex={-1}
-                          role="checkbox"
-                          selected={isItemSelected}
-                          aria-checked={isItemSelected}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={isItemSelected}
-                              onChange={(event) => handleClick(event, title)}
-                            />
-                          </TableCell>
-                          <TableCell align="left">{title}</TableCell>
-                          <TableCell align="left">{category}</TableCell>
-                          <TableCell align="left">{date}</TableCell>
-                          <TableCell align="left">
-                            {uz ? (
-                              <Avatar
-                                variant="square"
-                                sx={{ width: 16, height: 12 }}
-                                src="/static/icons/uz.svg"
-                              />
-                            ) : (
-                              <IconButton
-                                color="primary"
-                                aria-label="upload picture"
-                                component="span"
+                            return (
+                              <TableRow
+                                hover
+                                key={id}
+                                tabIndex={-1}
+                                role="checkbox"
+                                selected={isItemSelected}
+                                aria-checked={isItemSelected}
                               >
-                                <AddIcon />
-                              </IconButton>
-                            )}
-                          </TableCell>
-                          <TableCell align="left">
-                            {ru ? (
-                              <Avatar
-                                variant="square"
-                                sx={{ width: 16, height: 12 }}
-                                src="/static/icons/ru.svg"
-                              />
-                            ) : (
-                              <IconButton
-                                color="primary"
-                                aria-label="upload picture"
-                                component="span"
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            )}
-                          </TableCell>
-                          <TableCell align="left">
-                            {en ? (
-                              <Avatar
-                                variant="square"
-                                sx={{ width: 16, height: 12 }}
-                                src="/static/icons/us.svg"
-                              />
-                            ) : (
-                              <IconButton
-                                color="primary"
-                                aria-label="upload picture"
-                                component="span"
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            )}
-                          </TableCell>
+                                <TableCell padding="checkbox">
+                                  <Checkbox
+                                    checked={isItemSelected}
+                                    onChange={(event) =>
+                                      handleClick(event, title)
+                                    }
+                                  />
+                                </TableCell>
+                                <TableCell align="left">{title}</TableCell>
+                                <TableCell align="left">{category}</TableCell>
+                                <TableCell align="left">{date}</TableCell>
+                                <TableCell align="left">
+                                  {uz ? (
+                                    <Avatar
+                                      variant="square"
+                                      sx={{ width: 16, height: 12 }}
+                                      src="/static/icons/uz.svg"
+                                    />
+                                  ) : (
+                                    <IconButton
+                                      color="primary"
+                                      aria-label="upload picture"
+                                      component="span"
+                                    >
+                                      <AddIcon />
+                                    </IconButton>
+                                  )}
+                                </TableCell>
+                                <TableCell align="left">
+                                  {ru ? (
+                                    <Avatar
+                                      variant="square"
+                                      sx={{ width: 16, height: 12 }}
+                                      src="/static/icons/ru.svg"
+                                    />
+                                  ) : (
+                                    <IconButton
+                                      color="primary"
+                                      aria-label="upload picture"
+                                      component="span"
+                                    >
+                                      <AddIcon />
+                                    </IconButton>
+                                  )}
+                                </TableCell>
+                                <TableCell align="left">
+                                  {en ? (
+                                    <Avatar
+                                      variant="square"
+                                      sx={{ width: 16, height: 12 }}
+                                      src="/static/icons/us.svg"
+                                    />
+                                  ) : (
+                                    <IconButton
+                                      color="primary"
+                                      aria-label="upload picture"
+                                      component="span"
+                                    >
+                                      <AddIcon />
+                                    </IconButton>
+                                  )}
+                                </TableCell>
 
-                          <TableCell align="right">
-                            <UserMoreMenu />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
-                  )}
-                </TableBody>
+                                <TableCell align="right">
+                                  <UserMoreMenu />
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        {emptyRows > 0 && (
+                          <TableRow style={{ height: 53 * emptyRows }}>
+                            <TableCell colSpan={6} />
+                          </TableRow>
+                        )}
+                      </TableBody>
 
-                {isUserNotFound && (
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                        <SearchNotFound searchQuery={filterName} />
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                )}
-              </Table>
-            </TableContainer>
-          </Scrollbar>
-
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={POSTS.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+                      {isUserNotFound && (
+                        <TableBody>
+                          <TableRow>
+                            <TableCell
+                              align="center"
+                              colSpan={6}
+                              sx={{ py: 3 }}
+                            >
+                              <SearchNotFound searchQuery={filterName} />
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      )}
+                    </Table>
+                  </TableContainer>
+                </Scrollbar>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={posts.data ? posts.data.all_items : 0}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />{" "}
+              </>
+            ) : (
+              <Stack
+                sx={{ my: 20 }}
+                alignItems="center"
+                justifyContent="center"
+                spacing={2}
+              >
+                <CircularProgress />
+                <Typography>Загрузка записей ...</Typography>
+              </Stack>
+            )}
+          </Stack>
         </Card>
       </Container>
     </Page>

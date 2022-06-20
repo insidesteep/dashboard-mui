@@ -34,7 +34,7 @@ import {
   FormHelperText,
   Input,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { Image } from "@mui/icons-material";
 import { TabPanel, TabList, TabContext, LoadingButton } from "@mui/lab";
 // components
 import Page from "../components/Page";
@@ -167,24 +167,19 @@ export default function User() {
     onSubmit: (values) => {
       const newData = {
         category_id: values.category,
-        uz: [
-          {
-            title: values.titleUz,
-            description: content.uz,
-          },
-        ],
-        ru: [
-          {
-            title: values.titleRu,
-            description: content.ru,
-          },
-        ],
-        en: [
-          {
-            title: values.titleEn,
-            description: content.en,
-          },
-        ],
+        previewimg: thumbnail.src,
+        uz: {
+          title: values.titleUz,
+          description: content.uz,
+        },
+        ru: {
+          title: values.titleRu,
+          description: content.ru,
+        },
+        en: {
+          title: values.titleEn,
+          description: content.en,
+        },
       };
 
       dispatch(showLoadingpostCreate());
@@ -390,10 +385,14 @@ export default function User() {
                         />
                         <LoadingButton
                           variant="contained"
+                          loadingPosition="start"
                           component="span"
                           loading={thumbnail.loading}
+                          startIcon={<Image />}
                         >
-                          Изображение записи
+                          {thumbnail.loading
+                            ? "Загрузка изображения"
+                            : "Изображение записи"}
                         </LoadingButton>
                         {Boolean(touched.thumbnail && errors.thumbnail) && (
                           <FormHelperText id="thumbnail">

@@ -22,17 +22,17 @@ export const photogalleryList = () => {
   };
 };
 
-export const photogalleryCreateSuccess = (categories) => {
+export const photogalleryCreateSuccess = (galleries) => {
   return {
     type: PHOTOGALLERY_CREATE_SUCCESS,
-    payload: categories,
+    payload: galleries,
   };
 };
 
-export const photogalleryListSuccess = (categories) => {
+export const photogalleryListSuccess = (galleries) => {
   return {
     type: PHOTOGALLERY_LIST_SUCCESS,
-    payload: categories,
+    payload: galleries,
   };
 };
 

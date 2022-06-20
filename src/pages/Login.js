@@ -9,6 +9,7 @@ import {
   Alert,
   Backdrop,
   CircularProgress,
+  Stack,
 } from "@mui/material";
 // hooks
 import useResponsive from "../hooks/useResponsive";
@@ -78,9 +79,11 @@ export default function Login() {
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={loading}
-        
       >
-        <CircularProgress color="inherit" title="222"/>
+        <Stack spacing={2} alignItems="center">
+          <CircularProgress color="inherit" title="222" />
+          <Typography>Авторизация...</Typography>
+        </Stack>
       </Backdrop>
     );
   }

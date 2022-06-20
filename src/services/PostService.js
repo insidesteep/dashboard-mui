@@ -4,7 +4,7 @@ const PostService = {};
 
 PostService.create = (data) => {
   return fetch({
-    url: "/api/post/create",
+    url: "/api/posts/create",
     method: "post",
     data: data,
   });

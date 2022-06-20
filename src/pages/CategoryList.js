@@ -197,105 +197,114 @@ export default function User() {
 
         <Card>
           <UserListToolbar
+            placeholder="Поиск категории ..."
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
           />
-
-          <Scrollbar>
-            <TableContainer sx={{ minWidth: 800 }}>
-              {categories.loading ? (
-                <CircularProgress />
-              ) : (
-                <Table>
-                  <UserListHead
-                    order={order}
-                    orderBy={orderBy}
-                    headLabel={TABLE_HEAD}
-                    rowCount={categories.data.length}
-                    numSelected={selected.length}
-                    onRequestSort={handleRequestSort}
-                    onSelectAllClick={handleSelectAllClick}
-                  />
-                  <TableBody>
-                    {filteredUsers
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage
-                      )
-                      .map((row) => {
-                        const {
-                          id,
-                          category_name_ru,
-                          category_name_uz,
-                          category_name_en,
-                        } = row;
-                        const isItemSelected =
-                          selected.indexOf(category_name_uz) !== -1;
-
-                        return (
-                          <TableRow
-                            hover
-                            key={id}
-                            tabIndex={-1}
-                            role="checkbox"
-                            selected={isItemSelected}
-                            aria-checked={isItemSelected}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={isItemSelected}
-                                onChange={(event) =>
-                                  handleClick(event, category_name_uz)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell align="left">
-                              {category_name_uz}
-                            </TableCell>
-                            <TableCell align="left">
-                              {category_name_ru}
-                            </TableCell>
-                            <TableCell align="left">
-                              {category_name_en}
-                            </TableCell>
-
-                            <TableCell align="right">
-                              <UserMoreMenu />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    {emptyRows > 0 && (
-                      <TableRow style={{ height: 53 * emptyRows }}>
-                        <TableCell colSpan={6} />
-                      </TableRow>
-                    )}
-                  </TableBody>
-
-                  {isUserNotFound && (
+          {!categories.data.loading ? (
+            <>
+              <Scrollbar>
+                <TableContainer sx={{ minWidth: 800 }}>
+                  <Table>
+                    <UserListHead
+                      order={order}
+                      orderBy={orderBy}
+                      headLabel={TABLE_HEAD}
+                      rowCount={categories.data.length}
+                      numSelected={selected.length}
+                      onRequestSort={handleRequestSort}
+                      onSelectAllClick={handleSelectAllClick}
+                    />
                     <TableBody>
-                      <TableRow>
-                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                          <SearchNotFound searchQuery={filterName} />
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  )}
-                </Table>
-              )}
-            </TableContainer>
-          </Scrollbar>
+                      {filteredUsers
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row) => {
+                          const {
+                            id,
+                            category_name_ru,
+                            category_name_uz,
+                            category_name_en,
+                          } = row;
+                          const isItemSelected =
+                            selected.indexOf(category_name_uz) !== -1;
 
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={categories.data.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+                          return (
+                            <TableRow
+                              hover
+                              key={id}
+                              tabIndex={-1}
+                              role="checkbox"
+                              selected={isItemSelected}
+                              aria-checked={isItemSelected}
+                            >
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  checked={isItemSelected}
+                                  onChange={(event) =>
+                                    handleClick(event, category_name_uz)
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell align="left">
+                                {category_name_uz}
+                              </TableCell>
+                              <TableCell align="left">
+                                {category_name_ru}
+                              </TableCell>
+                              <TableCell align="left">
+                                {category_name_en}
+                              </TableCell>
+
+                              <TableCell align="right">
+                                <UserMoreMenu />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      {emptyRows > 0 && (
+                        <TableRow style={{ height: 53 * emptyRows }}>
+                          <TableCell colSpan={6} />
+                        </TableRow>
+                      )}
+                    </TableBody>
+
+                    {isUserNotFound && (
+                      <TableBody>
+                        <TableRow>
+                          <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                            <SearchNotFound searchQuery={filterName} />
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    )}
+                  </Table>
+                </TableContainer>
+              </Scrollbar>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={categories.data.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />{" "}
+            </>
+          ) : (
+            <Stack
+              sx={{ my: 20 }}
+              alignItems="center"
+              justifyContent="center"
+              spacing={2}
+            >
+              <CircularProgress />
+              <Typography>Загрузка категорий ...</Typography>
+            </Stack>
+          )}
         </Card>
       </Container>
       <CreateCategoryModal open={open} onClose={onClose} />
