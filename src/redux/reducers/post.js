@@ -4,6 +4,13 @@ import {
   SHOW_LOADING_POST_CREATE,
   POST_LIST_SUCCESS,
   SHOW_LOADING_POST_LIST,
+  POST_LIST_FAILURE,
+  POST_DELETE_SUCCESS,
+  POST_DELETE_FAILURE,
+  SHOW_LOADING_POST_DELETE,
+  SHOW_LOADING_POST_UPDATE,
+  POST_UPDATE_FAILURE,
+  POST_UPDATE_SUCCESS,
 } from "../constants/post";
 
 const initState = {
@@ -11,13 +18,18 @@ const initState = {
   error: false,
   posts: {
     loading: false,
-    data: null,
+    data: {
+      all_items: 0,
+      option: [],
+    },
   },
 };
 
 const post = (state = initState, action) => {
   switch (action.type) {
     case POST_CREATE_SUCCESS:
+    case POST_DELETE_SUCCESS:
+    case POST_UPDATE_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -38,35 +50,38 @@ const post = (state = initState, action) => {
       };
 
     case POST_CREATE_FAILURE:
+    case POST_DELETE_FAILURE:
+    case POST_UPDATE_FAILURE:
       return {
         ...state,
         loading: false,
         error: true,
       };
 
-    case POST_CREATE_FAILURE:
+    case POST_LIST_FAILURE:
       return {
         ...state,
         posts: {
           ...state.posts,
-          loading: false
-        }
+          loading: false,
+        },
       };
 
-    case SHOW_LOADING_POST_CREATE: {
+    case SHOW_LOADING_POST_CREATE:
+    case SHOW_LOADING_POST_DELETE:
+    case SHOW_LOADING_POST_UPDATE:
       return {
         ...state,
         loading: true,
       };
-    }
 
     case SHOW_LOADING_POST_LIST:
       return {
         ...state,
         posts: {
           ...state.posts,
-          loading: true
-        }
+          loading: true,
+        },
       };
 
     default:

@@ -26,14 +26,33 @@ import {
   photogalleryCreate,
   showLoadingPhotogalleryCreate,
 } from "../../redux/actions/photogallery";
+import { API_BASE_URL } from "src/config/AppConfig";
 
-const CreatePhotogalleryModal = ({ open, onClose }) => {
+const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
 
-  const { loading } = useSelector((state) => state.photogallery);
+  const { loading, photogallery } = useSelector((state) => state.photogallery);
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const gallery = photogallery.data.option.find(
+      (gallery) => gallery.gallery_id == galleryId
+    );
+
+    if (!gallery) return;
+
+    formik.setValues({
+      titleUz: gallery.tittle_uz,
+      titleRu: gallery.tittle_ru,
+      titleEn: gallery.tittle_en,
+    });
+
+    const urls = gallery.gallery.map((g) => ({ name: g, src: `${API_BASE_URL}images${g}` }));
+
+    setImageURLs(urls);
+  }, [galleryId]);
 
   useEffect(() => {
     if (images > 1) return;
@@ -219,4 +238,4 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
   );
 };
 
-export default CreatePhotogalleryModal;
+export default EditPhotogalleryModal;

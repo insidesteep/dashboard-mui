@@ -10,10 +10,28 @@ PostService.create = (data) => {
   });
 };
 
+PostService.update = (data) => {
+  return fetch({
+    url: "/api/posts/update",
+    method: "post",
+    data: data,
+  });
+};
+
 PostService.list = () => {
   return fetch({
     url: "/api/posts",
     method: "get",
+  });
+};
+
+PostService.delete = (post_id) => {
+  return fetch({
+    url: "/api/posts/delete",
+    method: "post",
+    data: {
+      post_id,
+    },
   });
 };
 

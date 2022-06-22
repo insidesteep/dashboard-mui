@@ -17,4 +17,12 @@ Photogallery.list = () => {
   });
 };
 
+Photogallery.delete = (gallery_id) => {
+  return fetch({
+    url: "/api/gallery/delete",
+    method: "post",
+    data: { gallery_id },
+  });
+};
+
 export default Photogallery;

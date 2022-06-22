@@ -202,7 +202,7 @@ export default function User() {
             filterName={filterName}
             onFilterName={handleFilterByName}
           />
-          {!categories.data.loading ? (
+          {!categories.loading ? (
             <>
               <Scrollbar>
                 <TableContainer sx={{ minWidth: 800 }}>
@@ -284,15 +284,22 @@ export default function User() {
                   </Table>
                 </TableContainer>
               </Scrollbar>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={categories.data.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />{" "}
+              {categories.data.length && (
+                <TablePagination
+                  rowsPerPageOptions={[]}
+                  labelDisplayedRows={({ from, to, count, page }) =>
+                    `${from}–${to} из ${
+                      count !== -1 ? count : `больше, чем ${to}`
+                    }`
+                  }
+                  component="div"
+                  count={categories.data.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              )}
             </>
           ) : (
             <Stack

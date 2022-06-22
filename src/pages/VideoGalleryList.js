@@ -1,7 +1,7 @@
-import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { filter } from "lodash";
+import { sentenceCase } from "change-case";
+import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 // material
 import {
   Card,
@@ -17,26 +17,40 @@ import {
   Typography,
   TableContainer,
   TablePagination,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 // components
-import Page from '../components/Page';
-import Label from '../components/Label';
-import Scrollbar from '../components/Scrollbar';
-import Iconify from '../components/Iconify';
-import SearchNotFound from '../components/SearchNotFound';
-import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
+import Page from "../components/Page";
+import Label from "../components/Label";
+import Scrollbar from "../components/Scrollbar";
+import Iconify from "../components/Iconify";
+import SearchNotFound from "../components/SearchNotFound";
+import {
+  UserListHead,
+  UserListToolbar,
+  UserMoreMenu,
+} from "../sections/@dashboard/user";
 // mock
-import VIDEOGALLERIES from '../_mock/videogalleries';
-import CreateVideogalleryModal from '../layouts/dashboard/CreateVideogalleryModal';
+
+import CreateVideogalleryModal from "../layouts/dashboard/CreateVideogalleryModal";
+import EditVideogalleryModal from "../layouts/dashboard/EditVideogalleryModal";
+
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  showLoadingvideogalleryList,
+  videogalleryList,
+  showLoadingvideogalleryDelete,
+  videogalleryDelete,
+} from "../redux/actions/videogallery";
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Название', alignRight: false },
-  { id: 'date', label: 'Дата создания', alignRight: false },
-  { id: 'images', label: 'Видео', alignRight: false },
-  { id: '' },
+  { id: "title_uz", label: "Название", alignRight: false },
+  { id: "created_at", label: "Дата создания", alignRight: false },
+  { id: "imagpreviewlinkes", label: "Видео", alignRight: false },
+  { id: "" },
 ];
 
 // ----------------------------------------------------------------------
@@ -52,7 +66,7 @@ function descendingComparator(a, b, orderBy) {
 }
 
 function getComparator(order, orderBy) {
-  return order === 'desc'
+  return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
@@ -65,7 +79,11 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(
+      array,
+      (_user) =>
+        _user.title_uz.toLowerCase().indexOf(query.toLowerCase()) !== -1
+    );
   }
   return stabilizedThis.map((el) => el[0]);
 }
@@ -73,17 +91,27 @@ function applySortFilter(array, comparator, query) {
 export default function User() {
   const [page, setPage] = useState(0);
 
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState("asc");
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState("title_uz");
 
-  const [filterName, setFilterName] = useState('');
+  const [filterName, setFilterName] = useState("");
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [open, setOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [videId, setVideoId] = useState(null);
+
+  const { videogallery } = useSelector((state) => state.videogallery);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(showLoadingvideogalleryList());
+    dispatch(videogalleryList());
+  }, []);
 
   const onOpen = () => {
     setOpen(true);
@@ -93,15 +121,25 @@ export default function User() {
     setOpen(false);
   };
 
+  const onOpenEditModal = (id) => {
+    setVideoId(id);
+    setIsEdit(true);
+  };
+
+  const onCloseEditModal = () => {
+    setIsEdit(false);
+    setVideoId(null);
+  };
+
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = VIDEOGALLERIES.map((n) => n.name);
+      const newSelecteds = videogallery.data.option.map((n) => n.title_uz);
       setSelected(newSelecteds);
       return;
     }
@@ -118,7 +156,10 @@ export default function User() {
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
     }
     setSelected(newSelected);
   };
@@ -136,26 +177,54 @@ export default function User() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - VIDEOGALLERIES.length) : 0;
+  const emptyRows =
+    page > 0
+      ? Math.max(0, (1 + page) * rowsPerPage - videogallery.data.option.length)
+      : 0;
 
-  const filteredUsers = applySortFilter(VIDEOGALLERIES, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(
+    videogallery.data.option,
+    getComparator(order, orderBy),
+    filterName
+  );
 
   const isUserNotFound = filteredUsers.length === 0;
+
+  const onDelete = (id) => {
+    dispatch(showLoadingvideogalleryDelete());
+    dispatch(videogalleryDelete(id));
+  };
 
   return (
     <Page name="User">
       <Container>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={5}
+        >
           <Typography variant="h4" gutterBottom>
             Видео
           </Typography>
-          <Button variant="contained" component={RouterLink} to="#" startIcon={<Iconify icon="eva:plus-fill" />} onClick={onOpen}>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to="#"
+            startIcon={<Iconify icon="eva:plus-fill" />}
+            onClick={onOpen}
+          >
             Добавить видео
           </Button>
         </Stack>
 
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+          <UserListToolbar
+            numSelected={selected.length}
+            filterName={filterName}
+            onFilterName={handleFilterByName}
+            placeholder="Поиск видео ..."
+          />
 
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
@@ -164,40 +233,45 @@ export default function User() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={VIDEOGALLERIES.length}
+                  rowCount={videogallery.data.all_items}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, date, image } = row;
-                    const isItemSelected = selected.indexOf(name) !== -1;
+                  {filteredUsers
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row) => {
+                      const { video_id, title_uz, created_at, previewlink } =
+                        row;
+                      const isItemSelected = selected.indexOf(title_uz) !== -1;
 
-                    return (
-                      <TableRow
-                        hover
-                        key={id}
-                        tabIndex={-1}
-                        role="checkbox"
-                        selected={isItemSelected}
-                        aria-checked={isItemSelected}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
-                        <TableCell align="left">{name}</TableCell>
-                        <TableCell align="left">{date}</TableCell>
-                        <TableCell align="left">
-                         
-                            <Avatar alt="Travis Howard" src={image} />
-                        </TableCell>
-                        <TableCell align="right">
-                          <UserMoreMenu />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                      return (
+                        <TableRow
+                          hover
+                          key={video_id}
+                          tabIndex={-1}
+                          role="checkbox"
+                          selected={isItemSelected}
+                          aria-checked={isItemSelected}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={isItemSelected}
+                              onChange={(event) => handleClick(event, title_uz)}
+                            />
+                          </TableCell>
+                          <TableCell align="left">{title_uz}</TableCell>
+                          <TableCell align="left">{created_at}</TableCell>
+                          <TableCell align="left">
+                            <Avatar alt="Travis Howard" src={previewlink} />
+                          </TableCell>
+                          <TableCell align="right">
+                            <UserMoreMenu onDelete={() => onDelete(video_id)} />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
                       <TableCell colSpan={6} />
@@ -218,18 +292,28 @@ export default function User() {
             </TableContainer>
           </Scrollbar>
 
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={VIDEOGALLERIES.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+          {videogallery.data.all_items && (
+            <TablePagination
+              rowsPerPageOptions={[]}
+              labelDisplayedRows={({ from, to, count, page }) =>
+                `${from}–${to} из ${count !== -1 ? count : `больше, чем ${to}`}`
+              }
+              component="div"
+              count={videogallery.data.all_items}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          )}
         </Card>
       </Container>
-      <CreateVideogalleryModal open={open} onClose={onClose}/>
+      <CreateVideogalleryModal open={open} onClose={onClose} />
+      <EditVideogalleryModal
+        open={isEdit}
+        onClose={onCloseEditModal}
+        videoId={videId}
+      />
     </Page>
   );
 }

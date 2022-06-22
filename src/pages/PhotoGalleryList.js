@@ -35,18 +35,21 @@ import {
 } from "../sections/@dashboard/user";
 // mock
 import CreatePhotogalleryModal from "../layouts/dashboard/CreatePhotogalleryModal";
+import EditPhotogalleryModal from "../layouts/dashboard/EditPhotogalleryModal";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   showLoadingPhotogalleryList,
   photogalleryList,
+  showLoadingPhotogalleryDelete,
+  photogalleryDelete,
 } from "../redux/actions/photogallery";
 import { API_BASE_URL } from "src/config/AppConfig";
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: "tittle", label: "Название", alignRight: false },
+  { id: "tittle_uz", label: "Название", alignRight: false },
   { id: "created_at", label: "Дата создания", alignRight: false },
   { id: "gallery", label: "Изображения", alignRight: false },
   { id: "" },
@@ -71,8 +74,6 @@ function getComparator(order, orderBy) {
 }
 
 function applySortFilter(array, comparator, query) {
-  if (!array) return [];
-
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -82,7 +83,7 @@ function applySortFilter(array, comparator, query) {
   if (query) {
     return filter(
       array,
-      (_user) => _user.tittle.toLowerCase().indexOf(query.toLowerCase()) !== -1
+      (_user) => _user.tittle_uz.toLowerCase().indexOf(query.toLowerCase()) !== -1
     );
   }
   return stabilizedThis.map((el) => el[0]);
@@ -95,13 +96,15 @@ export default function User() {
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState("name");
+  const [orderBy, setOrderBy] = useState("tittle_uz");
 
   const [filterName, setFilterName] = useState("");
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [open, setOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editID, setEditID] = useState(null);
 
   const { photogallery } = useSelector((state) => state.photogallery);
   const dispatch = useDispatch();
@@ -119,6 +122,16 @@ export default function User() {
     setOpen(false);
   };
 
+  const onOpenEditModal = (id) => {
+    setEditID(id);
+    setIsEdit(true);
+  };
+
+  const onCloseEditModal = () => {
+    setIsEdit(false);
+    setEditID(null);
+  };
+
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -127,7 +140,7 @@ export default function User() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = photogallery.data?.option.map((n) => n.tittle);
+      const newSelecteds = photogallery.data.option.map((n) => n.tittle_uz);
       setSelected(newSelecteds);
       return;
     }
@@ -167,18 +180,21 @@ export default function User() {
 
   const emptyRows =
     page > 0
-      ? Math.max(0, (1 + page) * rowsPerPage - photogallery.data?.option.length)
+      ? Math.max(0, (1 + page) * rowsPerPage - photogallery.data.option.length)
       : 0;
 
   const filteredUsers = applySortFilter(
-    photogallery.data?.option,
+    photogallery.data.option,
     getComparator(order, orderBy),
     filterName
   );
 
   const isUserNotFound = filteredUsers.length === 0;
 
-  console.log(photogallery);
+  const onDelete = (id) => {
+    dispatch(showLoadingPhotogalleryDelete());
+    dispatch(photogalleryDelete(id));
+  };
 
   return (
     <Page name="User">
@@ -208,9 +224,10 @@ export default function User() {
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
+            placeholder="Поиск галереи ..."
           />
 
-          {photogallery.data.length ? (
+          {!photogallery.data.loading ? (
             <>
               <Scrollbar>
                 <TableContainer sx={{ minWidth: 800 }}>
@@ -219,9 +236,7 @@ export default function User() {
                       order={order}
                       orderBy={orderBy}
                       headLabel={TABLE_HEAD}
-                      rowCount={
-                        photogallery.data ? photogallery.data.all_items : 0
-                      }
+                      rowCount={photogallery.data.all_items}
                       numSelected={selected.length}
                       onRequestSort={handleRequestSort}
                       onSelectAllClick={handleSelectAllClick}
@@ -233,14 +248,15 @@ export default function User() {
                           page * rowsPerPage + rowsPerPage
                         )
                         .map((row) => {
-                          const { id, tittle, created_at, gallery } = row;
+                          const { gallery_id, tittle_uz, created_at, gallery } =
+                            row;
                           const isItemSelected =
-                            selected.indexOf(tittle) !== -1;
+                            selected.indexOf(tittle_uz) !== -1;
 
                           return (
                             <TableRow
                               hover
-                              key={id}
+                              key={gallery_id}
                               tabIndex={-1}
                               role="checkbox"
                               selected={isItemSelected}
@@ -250,11 +266,11 @@ export default function User() {
                                 <Checkbox
                                   checked={isItemSelected}
                                   onChange={(event) =>
-                                    handleClick(event, tittle)
+                                    handleClick(event, tittle_uz)
                                   }
                                 />
                               </TableCell>
-                              <TableCell align="left">{tittle}</TableCell>
+                              <TableCell align="left">{tittle_uz}</TableCell>
                               <TableCell align="left">{created_at}</TableCell>
                               <TableCell align="left">
                                 <AvatarGroup max={4} variant="rounded">
@@ -267,7 +283,10 @@ export default function User() {
                                 </AvatarGroup>
                               </TableCell>
                               <TableCell align="right">
-                                <UserMoreMenu />
+                                <UserMoreMenu
+                                  onDelete={() => onDelete(gallery_id)}
+                                  onEdit={() => onOpenEditModal(gallery_id)}
+                                />
                               </TableCell>
                             </TableRow>
                           );
@@ -292,14 +311,22 @@ export default function User() {
                 </TableContainer>
               </Scrollbar>
 
-              <TablePagination
-                component="div"
-                count={photogallery.data ? photogallery.data.all_items : 0}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
+              {photogallery.data.all_items && (
+                <TablePagination
+                  rowsPerPageOptions={[]}
+                  labelDisplayedRows={({ from, to, count, page }) =>
+                    `${from}–${to} из ${
+                      count !== -1 ? count : `больше, чем ${to}`
+                    }`
+                  }
+                  component="div"
+                  count={photogallery.data.all_items}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              )}
             </>
           ) : (
             <Stack
@@ -315,6 +342,11 @@ export default function User() {
         </Card>
       </Container>
       <CreatePhotogalleryModal open={open} onClose={onClose} />
+      <EditPhotogalleryModal
+        open={isEdit}
+        onClose={onCloseEditModal}
+        galleryId={editID}
+      />
     </Page>
   );
 }

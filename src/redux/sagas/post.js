@@ -1,10 +1,19 @@
 import { all, takeEvery, put, fork, call } from "redux-saga/effects";
-import { POST_CREATE, POST_LIST } from "../constants/post";
+import {
+  POST_CREATE,
+  POST_DELETE,
+  POST_LIST,
+  POST_UPDATE,
+} from "../constants/post";
 import {
   postCreateSuccess,
   postCreateFailure,
   postListSuccess,
   postListFailure,
+  postDeleteSuccess,
+  postDeleteFailure,
+  postUpdateSuccess,
+  postUpdateeFailure,
 } from "../actions/post";
 
 // import { setOrganization } from "../actions/Organization";
@@ -27,6 +36,35 @@ export function* postCreate() {
   });
 }
 
+export function* postUpdate() {
+  yield takeEvery(POST_UPDATE, function* ({ payload }) {
+    const { data, cb } = payload;
+
+    try {
+      const posts = yield call(PostService.update, data);
+
+      yield put(postUpdateSuccess(posts));
+      yield cb();
+    } catch (error) {
+      //   yield put(showAuthMessage("error", error.response.data.message));\
+      yield put(postUpdateeFailure());
+    }
+  });
+}
+
+export function* postDelete() {
+  yield takeEvery(POST_DELETE, function* ({ payload }) {
+    try {
+      const posts = yield call(PostService.delete, payload);
+
+      yield put(postDeleteSuccess(posts));
+    } catch (error) {
+      //   yield put(showAuthMessage("error", error.response.data.message));\
+      yield put(postDeleteFailure());
+    }
+  });
+}
+
 export function* postList() {
   yield takeEvery(POST_LIST, function* ({ payload }) {
     try {
@@ -41,5 +79,10 @@ export function* postList() {
 }
 
 export default function* rootSaga() {
-  yield all([fork(postCreate), fork(postList)]);
+  yield all([
+    fork(postCreate),
+    fork(postList),
+    fork(postDelete),
+    fork(postUpdate),
+  ]);
 }

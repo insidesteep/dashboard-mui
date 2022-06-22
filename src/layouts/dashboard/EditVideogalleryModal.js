@@ -29,7 +29,7 @@ import {
 } from "../../redux/actions/videogallery";
 import { useDispatch, useSelector } from "react-redux";
 
-const CreateVideogalleryModal = ({ open, onClose }) => {
+const CreateVideogalleryModal = ({ open, onClose, videId }) => {
   const [video, setVideo] = useState(null);
   const [error, setError] = useState({ status: false, message: "" });
 
@@ -210,11 +210,7 @@ const CreateVideogalleryModal = ({ open, onClose }) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Закрыть</Button>
-            <LoadingButton
-              type="submit"
-              variant="contained"
-              loading={loading}
-            >
+            <LoadingButton type="submit" variant="contained" loading={loading}>
               Добавить
             </LoadingButton>
           </DialogActions>

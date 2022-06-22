@@ -4,6 +4,10 @@ import {
   SHOW_LOADING_PHOTOGALLERY_CREATE,
   PHOTOGALLERY_LIST_SUCCESS,
   SHOW_LOADING_PHOTOGALLERY_LIST,
+  PHOTOGALLERY_LIST_FAILURE,
+  PHOTOGALLERY_DELETE_SUCCESS,
+  PHOTOGALLERY_DELETE_FAILURE,
+  SHOW_LOADING_PHOTOGALLERY_DELETE,
 } from "../constants/photogallery";
 
 const initState = {
@@ -11,13 +15,17 @@ const initState = {
   error: false,
   photogallery: {
     loading: false,
-    data: null,
+    data: {
+      all_items: 0,
+      option: [],
+    },
   },
 };
 
 const photogallery = (state = initState, action) => {
   switch (action.type) {
     case PHOTOGALLERY_CREATE_SUCCESS:
+    case PHOTOGALLERY_DELETE_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -38,13 +46,14 @@ const photogallery = (state = initState, action) => {
       };
 
     case PHOTOGALLERY_CREATE_FAILURE:
+    case PHOTOGALLERY_DELETE_FAILURE:
       return {
         ...state,
         loading: false,
         error: true,
       };
 
-    case PHOTOGALLERY_CREATE_FAILURE:
+    case PHOTOGALLERY_LIST_FAILURE:
       return {
         ...state,
         photogallery: {
@@ -53,12 +62,12 @@ const photogallery = (state = initState, action) => {
         },
       };
 
-    case SHOW_LOADING_PHOTOGALLERY_CREATE: {
+    case SHOW_LOADING_PHOTOGALLERY_CREATE:
+    case SHOW_LOADING_PHOTOGALLERY_DELETE:
       return {
         ...state,
         loading: true,
       };
-    }
 
     case SHOW_LOADING_PHOTOGALLERY_LIST:
       return {

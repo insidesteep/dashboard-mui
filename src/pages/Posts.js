@@ -34,18 +34,20 @@ import {
 } from "../sections/@dashboard/user";
 // mock
 import { useDispatch, useSelector } from "react-redux";
-import { showLoadingpostList, postList } from "../redux/actions/post";
+import {
+  showLoadingpostList,
+  postList,
+  showLoadingpostDelete,
+  postDelete,
+} from "../redux/actions/post";
 import { useEffect } from "react";
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: "title", label: "Название", alignRight: false },
-  { id: "category", label: "Категория", alignRight: false },
-  { id: "date", label: "Дата создания", alignRight: false },
-  { id: "uz", label: "UZ", alignRight: false },
-  { id: "ru", label: "RU", alignRight: false },
-  { id: "en", label: "EN", alignRight: false },
+  { id: "title_uz", label: "UZ", alignRight: false },
+  { id: "title_ru", label: "RU", alignRight: false },
+  { id: "title_en", label: "EN", alignRight: false },
   { id: "" },
 ];
 
@@ -68,8 +70,6 @@ function getComparator(order, orderBy) {
 }
 
 function applySortFilter(array, comparator, query) {
-  if (!array) return [];
-
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -79,7 +79,8 @@ function applySortFilter(array, comparator, query) {
   if (query) {
     return filter(
       array,
-      (_user) => _user.title.toLowerCase().indexOf(query.toLowerCase()) !== -1
+      (_user) =>
+        _user.title_uz.toLowerCase().indexOf(query.toLowerCase()) !== -1
     );
   }
   return stabilizedThis.map((el) => el[0]);
@@ -92,7 +93,7 @@ export default function User() {
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState("title");
+  const [orderBy, setOrderBy] = useState("title_uz");
 
   const [filterName, setFilterName] = useState("");
 
@@ -116,7 +117,8 @@ export default function User() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = posts.data.option.map((n) => n.title);
+      const newSelecteds = posts.data.option.map((n) => n.title_uz);
+
       setSelected(newSelecteds);
       return;
     }
@@ -155,7 +157,9 @@ export default function User() {
   };
 
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - posts.data?.option.length) : 0;
+    page > 0
+      ? Math.max(0, (1 + page) * rowsPerPage - posts.data.option.length)
+      : 0;
 
   const filteredUsers = applySortFilter(
     posts.data.option,
@@ -164,6 +168,11 @@ export default function User() {
   );
 
   const isUserNotFound = filteredUsers.length === 0;
+
+  const onDelete = (id) => {
+    dispatch(showLoadingpostDelete());
+    dispatch(postDelete(id));
+  };
 
   return (
     <Page title="User">
@@ -189,160 +198,115 @@ export default function User() {
 
         <Card>
           <UserListToolbar
+            placeholder="Поиск записей ..."
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
           />
-          <Stack justifyContent="center" alignItems="center">
-            {posts.loading ? (
-              <>
-                <Scrollbar>
-                  <TableContainer sx={{ minWidth: 800 }}>
-                    <Table>
-                      <UserListHead
-                        order={order}
-                        orderBy={orderBy}
-                        headLabel={TABLE_HEAD}
-                        rowCount={posts.data ? posts.data.all_items : 0}
-                        numSelected={selected.length}
-                        onRequestSort={handleRequestSort}
-                        onSelectAllClick={handleSelectAllClick}
-                      />
-                      <TableBody>
-                        {filteredUsers
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row) => {
-                            const { id, title, category, date, uz, ru, en } =
-                              row;
-                            const isItemSelected =
-                              selected.indexOf(title) !== -1;
+          {!posts.loading ? (
+            <>
+              <Scrollbar>
+                <TableContainer sx={{ minWidth: 800 }}>
+                  <Table>
+                    <UserListHead
+                      order={order}
+                      orderBy={orderBy}
+                      headLabel={TABLE_HEAD}
+                      rowCount={posts.data.all_items}
+                      numSelected={selected.length}
+                      onRequestSort={handleRequestSort}
+                      onSelectAllClick={handleSelectAllClick}
+                    />
+                    <TableBody>
+                      {filteredUsers
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row) => {
+                          const { post_id, title_uz, title_ru, title_en } = row;
+                          console.log(row);
 
-                            return (
-                              <TableRow
-                                hover
-                                key={id}
-                                tabIndex={-1}
-                                role="checkbox"
-                                selected={isItemSelected}
-                                aria-checked={isItemSelected}
-                              >
-                                <TableCell padding="checkbox">
-                                  <Checkbox
-                                    checked={isItemSelected}
-                                    onChange={(event) =>
-                                      handleClick(event, title)
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell align="left">{title}</TableCell>
-                                <TableCell align="left">{category}</TableCell>
-                                <TableCell align="left">{date}</TableCell>
-                                <TableCell align="left">
-                                  {uz ? (
-                                    <Avatar
-                                      variant="square"
-                                      sx={{ width: 16, height: 12 }}
-                                      src="/static/icons/uz.svg"
-                                    />
-                                  ) : (
-                                    <IconButton
-                                      color="primary"
-                                      aria-label="upload picture"
-                                      component="span"
-                                    >
-                                      <AddIcon />
-                                    </IconButton>
-                                  )}
-                                </TableCell>
-                                <TableCell align="left">
-                                  {ru ? (
-                                    <Avatar
-                                      variant="square"
-                                      sx={{ width: 16, height: 12 }}
-                                      src="/static/icons/ru.svg"
-                                    />
-                                  ) : (
-                                    <IconButton
-                                      color="primary"
-                                      aria-label="upload picture"
-                                      component="span"
-                                    >
-                                      <AddIcon />
-                                    </IconButton>
-                                  )}
-                                </TableCell>
-                                <TableCell align="left">
-                                  {en ? (
-                                    <Avatar
-                                      variant="square"
-                                      sx={{ width: 16, height: 12 }}
-                                      src="/static/icons/us.svg"
-                                    />
-                                  ) : (
-                                    <IconButton
-                                      color="primary"
-                                      aria-label="upload picture"
-                                      component="span"
-                                    >
-                                      <AddIcon />
-                                    </IconButton>
-                                  )}
-                                </TableCell>
+                          const isItemSelected =
+                            selected.indexOf(title_uz) !== -1;
 
-                                <TableCell align="right">
-                                  <UserMoreMenu />
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        {emptyRows > 0 && (
-                          <TableRow style={{ height: 53 * emptyRows }}>
-                            <TableCell colSpan={6} />
-                          </TableRow>
-                        )}
-                      </TableBody>
-
-                      {isUserNotFound && (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell
-                              align="center"
-                              colSpan={6}
-                              sx={{ py: 3 }}
+                          return (
+                            <TableRow
+                              hover
+                              key={post_id}
+                              tabIndex={-1}
+                              role="checkbox"
+                              selected={isItemSelected}
+                              aria-checked={isItemSelected}
                             >
-                              <SearchNotFound searchQuery={filterName} />
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  checked={isItemSelected}
+                                  onChange={(event) =>
+                                    handleClick(event, title_uz)
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell align="left">{title_uz}</TableCell>
+                              <TableCell align="left">{title_ru}</TableCell>
+                              <TableCell align="left">{title_en}</TableCell>
+
+                              <TableCell align="right">
+                                <UserMoreMenu
+                                  onDelete={() => onDelete(post_id)}
+                                  editLink={`edit/${post_id}`}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      {emptyRows > 0 && (
+                        <TableRow style={{ height: 53 * emptyRows }}>
+                          <TableCell colSpan={6} />
+                        </TableRow>
                       )}
-                    </Table>
-                  </TableContainer>
-                </Scrollbar>
+                    </TableBody>
+
+                    {isUserNotFound && (
+                      <TableBody>
+                        <TableRow>
+                          <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                            <SearchNotFound searchQuery={filterName} />
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    )}
+                  </Table>
+                </TableContainer>
+              </Scrollbar>
+              {posts.data.all_items && (
                 <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
+                  rowsPerPageOptions={[]}
+                  labelDisplayedRows={({ from, to, count, page }) =>
+                    `${from}–${to} из ${
+                      count !== -1 ? count : `больше, чем ${to}`
+                    }`
+                  }
                   component="div"
-                  count={posts.data ? posts.data.all_items : 0}
+                  count={posts.data.all_items}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
-                />{" "}
-              </>
-            ) : (
-              <Stack
-                sx={{ my: 20 }}
-                alignItems="center"
-                justifyContent="center"
-                spacing={2}
-              >
-                <CircularProgress />
-                <Typography>Загрузка записей ...</Typography>
-              </Stack>
-            )}
-          </Stack>
+                />
+              )}
+            </>
+          ) : (
+            <Stack
+              sx={{ my: 20 }}
+              alignItems="center"
+              justifyContent="center"
+              spacing={2}
+            >
+              <CircularProgress />
+              <Typography>Загрузка записей ...</Typography>
+            </Stack>
+          )}
         </Card>
       </Container>
     </Page>

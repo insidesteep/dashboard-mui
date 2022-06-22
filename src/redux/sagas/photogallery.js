@@ -1,6 +1,7 @@
 import { all, takeEvery, put, fork, call } from "redux-saga/effects";
 import {
   PHOTOGALLERY_CREATE,
+  PHOTOGALLERY_DELETE,
   PHOTOGALLERY_LIST,
 } from "../constants/photogallery";
 import {
@@ -8,6 +9,8 @@ import {
   photogalleryCreateFailure,
   photogalleryListSuccess,
   photogalleryListFailure,
+  photogalleryDeleteSuccess,
+  photogalleryDeleteFailure,
 } from "../actions/photogallery";
 
 // import { setOrganization } from "../actions/Organization";
@@ -30,6 +33,19 @@ export function* photogalleryCreate() {
   });
 }
 
+export function* photogalleryDelete() {
+  yield takeEvery(PHOTOGALLERY_DELETE, function* ({ payload }) {
+    try {
+      const galleries = yield call(PhotogalleryService.delete, payload);
+
+      yield put(photogalleryDeleteSuccess(galleries));
+    } catch (error) {
+      //   yield put(showAuthMessage("error", error.response.data.message));\
+      yield put(photogalleryDeleteFailure());
+    }
+  });
+}
+
 export function* photogalleryList() {
   yield takeEvery(PHOTOGALLERY_LIST, function* ({ payload }) {
     try {
@@ -44,5 +60,9 @@ export function* photogalleryList() {
 }
 
 export default function* rootSaga() {
-  yield all([fork(photogalleryCreate), fork(photogalleryList)]);
+  yield all([
+    fork(photogalleryCreate),
+    fork(photogalleryList),
+    fork(photogalleryDelete),
+  ]);
 }
