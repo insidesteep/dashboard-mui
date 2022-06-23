@@ -3,6 +3,7 @@ import {
   VIDEOGALLERY_CREATE,
   VIDEOGALLERY_DELETE,
   VIDEOGALLERY_LIST,
+  VIDEOGALLERY_UPDATE,
 } from "../constants/videogallery";
 import {
   videogalleryCreateSuccess,
@@ -11,6 +12,8 @@ import {
   videogalleryListFailure,
   videogalleryDeleteSuccess,
   videogalleryDeleteFailure,
+  videogalleryUpdateSuccess,
+  videogalleryUpdateFailure,
 } from "../actions/videogallery";
 
 // import { setOrganization } from "../actions/Organization";
@@ -29,6 +32,22 @@ export function* videogalleryCreate() {
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
       yield put(videogalleryCreateFailure());
+    }
+  });
+}
+
+export function* videogalleryUpdate() {
+  yield takeEvery(VIDEOGALLERY_UPDATE, function* ({ payload }) {
+    const { data, cb } = payload;
+
+    try {
+      const videos = yield call(VideogalleryService.update, data);
+
+      yield put(videogalleryUpdateSuccess(videos));
+      yield cb();
+    } catch (error) {
+      //   yield put(showAuthMessage("error", error.response.data.message));\
+      yield put(videogalleryUpdateFailure());
     }
   });
 }
@@ -64,5 +83,6 @@ export default function* rootSaga() {
     fork(videogalleryCreate),
     fork(videogalleryList),
     fork(videogalleryDelete),
+    fork(videogalleryUpdate),
   ]);
 }

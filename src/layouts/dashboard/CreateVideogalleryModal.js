@@ -109,7 +109,7 @@ const CreateVideogalleryModal = ({ open, onClose }) => {
     validationSchema: CreateVideogallerySchema,
     onSubmit: (values) => {
       const data = {
-        youtubelink: `https://www.youtube.com/embed/$${video.videoID}`,
+        youtubelink: `https://www.youtube.com/embed/${video.videoID}`,
         previewlink: video.thumbnail_url,
         title_uz: values.uz,
         title_ru: values.ru,

@@ -8,6 +8,9 @@ import {
   VIDEOGALLERY_DELETE_SUCCESS,
   VIDEOGALLERY_DELETE_FAILURE,
   SHOW_LOADING_VIDEOGALLERY_DELETE,
+  VIDEOGALLERY_UPDATE_SUCCESS,
+  VIDEOGALLERY_UPDATE_FAILURE,
+  SHOW_LOADING_VIDEOGALLERY_UPDATE,
 } from "../constants/videogallery";
 
 const initState = {
@@ -26,6 +29,7 @@ const videogallery = (state = initState, action) => {
   switch (action.type) {
     case VIDEOGALLERY_CREATE_SUCCESS:
     case VIDEOGALLERY_DELETE_SUCCESS:
+    case VIDEOGALLERY_UPDATE_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -47,6 +51,7 @@ const videogallery = (state = initState, action) => {
 
     case VIDEOGALLERY_CREATE_FAILURE:
     case VIDEOGALLERY_DELETE_FAILURE:
+    case VIDEOGALLERY_UPDATE_FAILURE:
       return {
         ...state,
         loading: false,
@@ -64,6 +69,7 @@ const videogallery = (state = initState, action) => {
 
     case SHOW_LOADING_VIDEOGALLERY_CREATE:
     case SHOW_LOADING_VIDEOGALLERY_DELETE:
+    case SHOW_LOADING_VIDEOGALLERY_UPDATE:
       return {
         ...state,
         loading: true,

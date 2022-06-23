@@ -24,17 +24,35 @@ import * as Yup from "yup";
 import { useFormik, Form, FormikProvider } from "formik";
 import YouTube from "react-youtube";
 import {
-  showLoadingvideogalleryCreate,
-  videogalleryCreate,
+  showLoadingvideogalleryUpdate,
+  videogalleryUpdate,
 } from "../../redux/actions/videogallery";
 import { useDispatch, useSelector } from "react-redux";
 
-const CreateVideogalleryModal = ({ open, onClose, videId }) => {
+const CreateVideogalleryModal = ({ open, onClose, videoId }) => {
   const [video, setVideo] = useState(null);
   const [error, setError] = useState({ status: false, message: "" });
 
-  const { loading } = useSelector((state) => state.videogallery);
+  const { loading, videogallery } = useSelector((state) => state.videogallery);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (videoId) {
+      const video = videogallery.data.option.find((v) => v.video_id == videoId);
+
+      if (!video) return;
+
+      const ytId = video.youtubelink.split("embed/")[1];
+
+      formik.setValues({
+        uz: video.title_uz,
+        ru: video.title_ru,
+        en: video.title_en,
+        id: ytId,
+      });
+      console.log(video);
+    }
+  }, [videoId]);
 
   const opts = {
     height: "390",
@@ -116,8 +134,8 @@ const CreateVideogalleryModal = ({ open, onClose, videId }) => {
         title_en: values.en,
       };
 
-      dispatch(showLoadingvideogalleryCreate());
-      dispatch(videogalleryCreate(data, handleClose));
+      dispatch(showLoadingvideogalleryUpdate());
+      dispatch(videogalleryUpdate(data, handleClose));
     },
   });
 

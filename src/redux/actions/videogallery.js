@@ -11,11 +11,22 @@ import {
   VIDEOGALLERY_DELETE,
   VIDEOGALLERY_DELETE_SUCCESS,
   VIDEOGALLERY_DELETE_FAILURE,
+  VIDEOGALLERY_UPDATE,
+  VIDEOGALLERY_UPDATE_SUCCESS,
+  VIDEOGALLERY_UPDATE_FAILURE,
+  SHOW_LOADING_VIDEOGALLERY_UPDATE,
 } from "../constants/videogallery";
 
 export const videogalleryCreate = (data, cb) => {
   return {
     type: VIDEOGALLERY_CREATE,
+    payload: { data, cb },
+  };
+};
+
+export const videogalleryUpdate = (data, cb) => {
+  return {
+    type: VIDEOGALLERY_UPDATE,
     payload: { data, cb },
   };
 };
@@ -40,6 +51,13 @@ export const videogalleryCreateSuccess = (videoData) => {
   };
 };
 
+export const videogalleryUpdateSuccess = (videoData) => {
+  return {
+    type: VIDEOGALLERY_UPDATE_SUCCESS,
+    payload: videoData,
+  };
+};
+
 export const videogalleryListSuccess = (videos) => {
   return {
     type: VIDEOGALLERY_LIST_SUCCESS,
@@ -60,6 +78,12 @@ export const videogalleryCreateFailure = () => {
   };
 };
 
+export const videogalleryUpdateFailure = () => {
+  return {
+    type: VIDEOGALLERY_UPDATE_FAILURE,
+  };
+};
+
 export const videogalleryListFailure = () => {
   return {
     type: VIDEOGALLERY_LIST_FAILURE,
@@ -75,6 +99,12 @@ export const videogalleryDeleteFailure = () => {
 export const showLoadingvideogalleryCreate = () => {
   return {
     type: SHOW_LOADING_VIDEOGALLERY_CREATE,
+  };
+};
+
+export const showLoadingvideogalleryUpdate = () => {
+  return {
+    type: SHOW_LOADING_VIDEOGALLERY_UPDATE,
   };
 };
 

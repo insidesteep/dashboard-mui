@@ -103,7 +103,7 @@ export default function User() {
 
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [videId, setVideoId] = useState(null);
+  const [videoId, setVideoId] = useState(null);
 
   const { videogallery } = useSelector((state) => state.videogallery);
   const dispatch = useDispatch();
@@ -267,7 +267,10 @@ export default function User() {
                             <Avatar alt="Travis Howard" src={previewlink} />
                           </TableCell>
                           <TableCell align="right">
-                            <UserMoreMenu onDelete={() => onDelete(video_id)} />
+                            <UserMoreMenu
+                              onDelete={() => onDelete(video_id)}
+                              onEdit={() => onOpenEditModal(video_id)}
+                            />
                           </TableCell>
                         </TableRow>
                       );
@@ -312,7 +315,7 @@ export default function User() {
       <EditVideogalleryModal
         open={isEdit}
         onClose={onCloseEditModal}
-        videoId={videId}
+        videoId={videoId}
       />
     </Page>
   );

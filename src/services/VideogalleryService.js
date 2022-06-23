@@ -6,7 +6,7 @@ Videogallery.create = (data) => {
   return fetch({
     url: "/api/posts/video",
     method: "post",
-    data: data,
+    data,
   });
 };
 
@@ -14,6 +14,14 @@ Videogallery.list = () => {
   return fetch({
     url: "/api/videos",
     method: "get",
+  });
+};
+
+Videogallery.update = (data) => {
+  return fetch({
+    url: "/api/video/update",
+    method: "post",
+    data,
   });
 };
 
