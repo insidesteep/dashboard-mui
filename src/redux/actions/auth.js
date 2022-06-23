@@ -34,11 +34,11 @@ export const signInSuccess = (data) => {
 };
 
 export const signInFailure = (message) => {
-    return {
-      type: SIGNIN_FAILURE,
-      payload: message,
-    };
+  return {
+    type: SIGNIN_FAILURE,
+    payload: message,
   };
+};
 
 export const showLoading = () => {
   return {

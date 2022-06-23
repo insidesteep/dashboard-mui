@@ -15,8 +15,9 @@ import Iconify from "../../../components/Iconify";
 
 export default function UserMoreMenu({
   editLink = "",
-  onDelete = () => {},
-  onEdit = () => {},
+  onDelete = () => { },
+  onEdit = () => { },
+  deleteOpt = true
 }) {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function UserMoreMenu({
           />
         </MenuItem>
 
-        <MenuItem sx={{ color: "text.secondary" }} onClick={onDelete}>
+        {deleteOpt && <MenuItem sx={{ color: "text.secondary" }} onClick={onDelete}>
           <ListItemIcon>
             <Iconify icon="eva:trash-2-outline" width={24} height={24} />
           </ListItemIcon>
@@ -60,7 +61,7 @@ export default function UserMoreMenu({
             primary="Удалить"
             primaryTypographyProps={{ variant: "body2" }}
           />
-        </MenuItem>
+        </MenuItem>}
       </Menu>
     </>
   );

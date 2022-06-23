@@ -17,7 +17,6 @@ const initState = {
 const auth = (state = initState, action) => {
   switch (action.type) {
     case SIGNIN_SUCCESS:
-
       return {
         ...state,
         loading: false,
@@ -38,6 +37,11 @@ const auth = (state = initState, action) => {
           message: action.payload,
         },
       };
+
+    case SIGNOUT:
+      localStorage.removeItem(AUTH_TOKEN);
+
+      return initState;
 
     case SHOW_LOADING: {
       return {

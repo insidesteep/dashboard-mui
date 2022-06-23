@@ -196,7 +196,6 @@ export default function EditPost() {
       titleUz: "",
       titleRu: "",
       titleEn: "",
-      thumbnail: null,
     },
     validationSchema: CreatePostSchema,
     onSubmit: (values) => {
@@ -448,16 +447,18 @@ export default function EditPost() {
                         sx={{ width: 200 }}
                         labelId="category-label-id"
                         label="Выберите категорию"
-                        select
                         {...getFieldProps("category")}
                         error={Boolean(touched.category && errors.category)}
                         helperText={touched.category && errors.category}
                       >
-                        {[...categs, initCategory].map((c) => (
-                          <MenuItem key={c.id} value={c.id}>
-                            {getCategoryByLang(c)}
-                          </MenuItem>
-                        ))}
+                        {[...categs, initCategory].map(
+                          (c) =>
+                            console.log("PPP", c) || (
+                              <MenuItem key={c.id || 1} value={c.id}>
+                                {getCategoryByLang(c)}
+                              </MenuItem>
+                            )
+                        )}
                       </Select>
                     </FormControl>
                   </Stack>

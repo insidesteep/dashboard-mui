@@ -37,21 +37,26 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const gallery = photogallery.data.option.find(
-      (gallery) => gallery.gallery_id == galleryId
-    );
+    if (galleryId) {
+      const gallery = photogallery.data.option.find(
+        (gallery) => gallery.gallery_id == galleryId
+      );
 
-    if (!gallery) return;
+      if (!gallery) return;
 
-    formik.setValues({
-      titleUz: gallery.tittle_uz,
-      titleRu: gallery.tittle_ru,
-      titleEn: gallery.tittle_en,
-    });
+      formik.setValues({
+        titleUz: gallery.tittle_uz,
+        titleRu: gallery.tittle_ru,
+        titleEn: gallery.tittle_en,
+      });
 
-    const urls = gallery.gallery.map((g) => ({ name: g, src: `${API_BASE_URL}images${g}` }));
+      const urls = gallery.gallery.map((g) => ({
+        name: g,
+        src: `${API_BASE_URL}images${g}`,
+      }));
 
-    setImageURLs(urls);
+      setImageURLs(urls);
+    }
   }, [galleryId]);
 
   useEffect(() => {
@@ -73,10 +78,12 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
   };
 
   const handleClose = () => {
-    formik.resetForm();
-    setImageURLs([]);
-    setImages([]);
-    onClose();
+    if (!loading) {
+      formik.resetForm();
+      setImageURLs([]);
+      setImages([]);
+      onClose();
+    }
   };
 
   const CreatePhotogallerySchema = Yup.object().shape({

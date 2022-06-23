@@ -20,9 +20,10 @@ export const photogalleryCreate = (data, cb) => {
   };
 };
 
-export const photogalleryList = () => {
+export const photogalleryList = (page) => {
   return {
     type: PHOTOGALLERY_LIST,
+    payload: page,
   };
 };
 
@@ -71,7 +72,6 @@ export const photogalleryDeleteFailure = () => {
     type: PHOTOGALLERY_DELETE_FAILURE,
   };
 };
-
 
 export const showLoadingPhotogalleryCreate = () => {
   return {

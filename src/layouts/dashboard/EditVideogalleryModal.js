@@ -44,6 +44,8 @@ const CreateVideogalleryModal = ({ open, onClose, videoId }) => {
 
       const ytId = video.youtubelink.split("embed/")[1];
 
+      setVideo({ videoID: ytId, thumbnail_url: video.previewlink });
+
       formik.setValues({
         uz: video.title_uz,
         ru: video.title_ru,
@@ -63,8 +65,10 @@ const CreateVideogalleryModal = ({ open, onClose, videoId }) => {
   };
 
   const handleClose = () => {
-    onClose();
-    formik.resetForm();
+    if (!loading) {
+      onClose();
+      formik.resetForm();
+    }
   };
 
   const checkYouTubeID = async (ID) => {
@@ -127,11 +131,12 @@ const CreateVideogalleryModal = ({ open, onClose, videoId }) => {
     validationSchema: CreateVideogallerySchema,
     onSubmit: (values) => {
       const data = {
-        youtubelink: `https://www.youtube.com/embed/$${video.videoID}`,
+        youtubelink: `https://www.youtube.com/embed/${video.videoID}`,
         previewlink: video.thumbnail_url,
         title_uz: values.uz,
         title_ru: values.ru,
         title_en: values.en,
+        video_id: videoId,
       };
 
       dispatch(showLoadingvideogalleryUpdate());
@@ -145,7 +150,7 @@ const CreateVideogalleryModal = ({ open, onClose, videoId }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth>
-      <DialogTitle>Новое видео</DialogTitle>
+      <DialogTitle>Редактирование видео</DialogTitle>
       <FormikProvider value={formik}>
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
           <DialogContent>
@@ -229,7 +234,7 @@ const CreateVideogalleryModal = ({ open, onClose, videoId }) => {
           <DialogActions>
             <Button onClick={onClose}>Закрыть</Button>
             <LoadingButton type="submit" variant="contained" loading={loading}>
-              Добавить
+              Обновить
             </LoadingButton>
           </DialogActions>
         </Form>

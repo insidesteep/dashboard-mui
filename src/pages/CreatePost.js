@@ -147,6 +147,8 @@ export default function User() {
 
   useEffect(() => {}, []);
 
+  console.log(content);
+
   const CreatePostSchema = Yup.object().shape({
     category: Yup.string().required("Выберите категорию"),
     titleUz: Yup.string().required("Заполните поле"),
@@ -161,7 +163,6 @@ export default function User() {
       titleUz: "",
       titleRu: "",
       titleEn: "",
-      thumbnail: null,
     },
     validationSchema: CreatePostSchema,
     onSubmit: (values) => {
@@ -410,7 +411,6 @@ export default function User() {
                         sx={{ width: 200 }}
                         labelId="category-label-id"
                         label="Выберите категорию"
-                        select
                         {...getFieldProps("category")}
                         error={Boolean(touched.category && errors.category)}
                         helperText={touched.category && errors.category}
@@ -443,7 +443,7 @@ export default function User() {
                       // tinymceScriptSrc="/tinymce/tinymce.min.js"
                       apiKey="jmurcpps294xm8lwiqcs2igjc9x3htuxixlil2z8kp9ofc4s"
                       onInit={(evt, editor) => (editorRef.current = editor)}
-                      initialValue="<p>This is the initial content of the editor.</p>"
+                      initialValue={content.uz}
                       init={{
                         height: 500,
                         menubar: false,
@@ -531,7 +531,7 @@ export default function User() {
                     // tinymceScriptSrc="/tinymce/tinymce.min.js"
                     apiKey="jmurcpps294xm8lwiqcs2igjc9x3htuxixlil2z8kp9ofc4s"
                     onInit={(evt, editor) => (editorRef.current = editor)}
-                    initialValue="<p>This is the initial content of the editor.</p>"
+                    initialValue={content.ru}
                     init={{
                       height: 500,
                       menubar: false,
@@ -617,7 +617,7 @@ export default function User() {
                       // tinymceScriptSrc="/tinymce/tinymce.min.js"
                       apiKey="jmurcpps294xm8lwiqcs2igjc9x3htuxixlil2z8kp9ofc4s"
                       onInit={(evt, editor) => (editorRef.current = editor)}
-                      initialValue="<p>This is the initial content of the editor.</p>"
+                      initialValue={content.en}
                       init={{
                         height: 500,
                         menubar: false,

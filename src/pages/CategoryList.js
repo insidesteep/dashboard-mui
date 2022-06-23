@@ -32,6 +32,8 @@ import {
 } from "../sections/@dashboard/user";
 // mock
 import CreateCategoryModal from "../layouts/dashboard/CreateCategoryModal";
+import EditCategoryModal from "../layouts/dashboard/EditCategoryModal";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   showLoadingCategoryList,
@@ -96,6 +98,8 @@ export default function User() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [open, setOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [categoryId, setCategoryId] = useState(null);
 
   const { categories } = useSelector((state) => state.category);
   const dispatch = useDispatch();
@@ -170,6 +174,16 @@ export default function User() {
 
   const onClose = () => {
     setOpen(false);
+  };
+
+  const onOpenEditModal = (id) => {
+    setIsEdit(true);
+    setCategoryId(id);
+  };
+
+  const onCloseEditModal = () => {
+    setIsEdit(false);
+    setCategoryId(null);
   };
 
   return (
@@ -260,7 +274,10 @@ export default function User() {
                               </TableCell>
 
                               <TableCell align="right">
-                                <UserMoreMenu />
+                                <UserMoreMenu
+                                  onEdit={() => onOpenEditModal(id)}
+                                  deleteOpt={false}
+                                />
                               </TableCell>
                             </TableRow>
                           );
@@ -315,6 +332,11 @@ export default function User() {
         </Card>
       </Container>
       <CreateCategoryModal open={open} onClose={onClose} />
+      <EditCategoryModal
+        open={isEdit}
+        onClose={onCloseEditModal}
+        categoryId={categoryId}
+      />
     </Page>
   );
 }

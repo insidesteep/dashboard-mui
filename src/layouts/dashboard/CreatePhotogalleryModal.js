@@ -54,10 +54,12 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
   };
 
   const handleClose = () => {
-    formik.resetForm();
-    setImageURLs([]);
-    setImages([]);
-    onClose();
+    if (!loading) {
+      formik.resetForm();
+      setImageURLs([]);
+      setImages([]);
+      onClose();
+    }
   };
 
   const CreatePhotogallerySchema = Yup.object().shape({

@@ -14,13 +14,28 @@ import * as Yup from "yup";
 import { useFormik, Form, FormikProvider } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  categoryCreate,
-  showLoadingCategoryCreate,
+  categoryUpdate,
+  showLoadingCategoryUpdate,
 } from "../../redux/actions/category";
+import { useEffect } from "react";
 
-const CreateCategoryModal = ({ open, onClose }) => {
-  const { loading } = useSelector((state) => state.category);
+const CreateCategoryModal = ({ open, onClose, categoryId }) => {
+  const { loading, categories } = useSelector((state) => state.category);
   const disoatch = useDispatch();
+
+  useEffect(() => {
+    if (categoryId) {
+      const category = categories.data.find((c) => c.id == categoryId);
+
+      if (!category) return;
+
+      formik.setValues({
+        titleUz: category.category_name_uz,
+        titleRu: category.category_name_ru,
+        titleUs: category.category_name_en,
+      });
+    }
+  }, [categoryId]);
 
   const CreateCategorySchema = Yup.object().shape({
     titleUz: Yup.string().required("Заполните поле"),
@@ -36,10 +51,11 @@ const CreateCategoryModal = ({ open, onClose }) => {
     },
     validationSchema: CreateCategorySchema,
     onSubmit: (values) => {
-      disoatch(showLoadingCategoryCreate());
+      disoatch(showLoadingCategoryUpdate());
       disoatch(
-        categoryCreate(
+        categoryUpdate(
           {
+            category_id: categoryId,
             category_name_uz: values.titleUz,
             category_name_ru: values.titleRu,
             category_name_en: values.titleUs,
@@ -49,6 +65,8 @@ const CreateCategoryModal = ({ open, onClose }) => {
       );
     },
   });
+
+  console.log(loading);
 
   const handleClose = () => {
     if (!loading) {
@@ -64,7 +82,7 @@ const CreateCategoryModal = ({ open, onClose }) => {
     <Dialog open={open} onClose={handleClose} fullWidth>
       <FormikProvider value={formik}>
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-          <DialogTitle>Новая категория</DialogTitle>
+          <DialogTitle>Редактирование категории</DialogTitle>
           <DialogContent>
             <Stack spacing={3}>
               <Box sx={{ display: "flex", alignItems: "flex-end" }}>
@@ -142,7 +160,7 @@ const CreateCategoryModal = ({ open, onClose }) => {
           <DialogActions>
             <Button onClick={onClose}>Закрыть</Button>
             <LoadingButton type="submit" variant="contained" loading={loading}>
-              Создать
+              Обновить
             </LoadingButton>
           </DialogActions>
         </Form>

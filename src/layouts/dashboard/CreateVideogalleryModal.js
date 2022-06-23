@@ -45,8 +45,10 @@ const CreateVideogalleryModal = ({ open, onClose }) => {
   };
 
   const handleClose = () => {
-    onClose();
-    formik.resetForm();
+    if (!loading) {
+      onClose();
+      formik.resetForm();
+    }
   };
 
   const checkYouTubeID = async (ID) => {
@@ -210,11 +212,7 @@ const CreateVideogalleryModal = ({ open, onClose }) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Закрыть</Button>
-            <LoadingButton
-              type="submit"
-              variant="contained"
-              loading={loading}
-            >
+            <LoadingButton type="submit" variant="contained" loading={loading}>
               Добавить
             </LoadingButton>
           </DialogActions>

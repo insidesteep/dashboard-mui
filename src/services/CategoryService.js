@@ -10,6 +10,14 @@ CategoryService.create = (data) => {
   });
 };
 
+CategoryService.update = (data) => {
+  return fetch({
+    url: "/api/category/update",
+    method: "post",
+    data
+  });
+};
+
 CategoryService.list = () => {
   return fetch({
     url: "/api/category",

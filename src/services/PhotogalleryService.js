@@ -10,9 +10,9 @@ Photogallery.create = (data) => {
   });
 };
 
-Photogallery.list = () => {
+Photogallery.list = (page = 1) => {
   return fetch({
-    url: "/api/gallery",
+    url: `/api/gallery?page=${page}`,
     method: "get",
   });
 };

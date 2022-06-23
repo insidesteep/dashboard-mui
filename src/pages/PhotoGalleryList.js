@@ -83,14 +83,15 @@ function applySortFilter(array, comparator, query) {
   if (query) {
     return filter(
       array,
-      (_user) => _user.tittle_uz.toLowerCase().indexOf(query.toLowerCase()) !== -1
+      (_user) =>
+        _user.tittle_uz.toLowerCase().indexOf(query.toLowerCase()) !== -1
     );
   }
   return stabilizedThis.map((el) => el[0]);
 }
 
 export default function User() {
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
 
   const [order, setOrder] = useState("asc");
 
@@ -111,8 +112,8 @@ export default function User() {
 
   useEffect(() => {
     dispatch(showLoadingPhotogalleryList());
-    dispatch(photogalleryList());
-  }, []);
+    dispatch(photogalleryList(page));
+  }, [page]);
 
   const onOpen = () => {
     setOpen(true);
