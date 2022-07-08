@@ -8,6 +8,7 @@ import MUIRichTextEditor from "mui-rte";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { Editor } from "@tinymce/tinymce-react";
+import ImageCropperModal from "../layouts/dashboard/ImageCropperModal";
 
 // material
 import {
@@ -137,6 +138,7 @@ export default function User() {
 
   const [value, setValue] = useState("1");
   const [thumbnail, setThumbnail] = useState({ src: "", loading: false });
+  const [isOpenCrop, setIsOpenCrop] = useState(false);
 
   const { categories } = useSelector((state) => state.category);
   const { loading: createLoading } = useSelector((state) => state.post);
@@ -147,7 +149,13 @@ export default function User() {
 
   useEffect(() => {}, []);
 
-  console.log(content);
+  const onOpenCropModal = (file) => {
+    const previewImage = URL.createObjectURL(file);
+
+    setThumbnail({ src: previewImage, loading: false });
+    setIsOpenCrop(true);
+  };
+  const onCloseCropModal = () => setIsOpenCrop(false);
 
   const CreatePostSchema = Yup.object().shape({
     category: Yup.string().required("Выберите категорию"),
@@ -380,7 +388,8 @@ export default function User() {
                           aria-describedby="thumbnail"
                           {...getFieldProps("thumbnail")}
                           onChange={(e) => {
-                            uploadThumbnail(e.target.files[0]);
+                            // uploadThumbnail(e.target.files[0]);
+                            onOpenCropModal(e.target.files[0]);
                             getFieldProps("thumbnail").onChange(e);
                           }}
                         />
@@ -695,6 +704,12 @@ export default function User() {
           </Form>
         </FormikProvider>
       </Container>
+      <ImageCropperModal
+        open={isOpenCrop}
+        onClose={onCloseCropModal}
+        image={thumbnail}
+        onUpload={uploadThumbnail}
+      />
     </Page>
   );
 }

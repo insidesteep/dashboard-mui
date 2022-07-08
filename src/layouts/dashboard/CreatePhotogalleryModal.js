@@ -15,6 +15,7 @@ import {
   Typography,
   ImageListItemBar,
   IconButton,
+  Alert,
 } from "@mui/material";
 import { DeleteOutline } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
@@ -49,8 +50,32 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
     setImageURLs(newImageURLs);
   }, [images]);
 
-  const handleChangeImages = (e) => {
-    setImages([...e.target.files]);
+  const handleChangeImages = async (e) => {
+    const correctImages = [];
+
+    await Promise.all(
+      Array.from(e.target.files).map(async (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+
+          reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+              if (img.width == 600 && img.height == 400) {
+                console.log(1);
+                correctImages.push(file);
+                resolve(file);
+              }
+              resolve();
+            };
+          };
+        });
+      })
+    );
+
+    setImages([...correctImages]);
   };
 
   const handleClose = () => {
@@ -156,7 +181,10 @@ const CreatePhotogalleryModal = ({ open, onClose }) => {
                 error={Boolean(touched.titleEn && errors.titleEn)}
                 helperText={touched.titleEn && errors.titleEn}
               />
-
+              <Alert severity="info">
+                Загрузите изображения в разрешении 600x400. Некорректные
+                разрешения будут игнорированы
+              </Alert>
               <label htmlFor="contained-button-file">
                 <input
                   accept="image/*"

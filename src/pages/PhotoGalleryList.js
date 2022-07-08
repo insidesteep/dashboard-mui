@@ -91,7 +91,7 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function User() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState("asc");
 
@@ -112,7 +112,7 @@ export default function User() {
 
   useEffect(() => {
     dispatch(showLoadingPhotogalleryList());
-    dispatch(photogalleryList(page));
+    dispatch(photogalleryList(page + 1));
   }, [page]);
 
   const onOpen = () => {
@@ -292,11 +292,6 @@ export default function User() {
                             </TableRow>
                           );
                         })}
-                      {emptyRows > 0 && (
-                        <TableRow style={{ height: 53 * emptyRows }}>
-                          <TableCell colSpan={6} />
-                        </TableRow>
-                      )}
                     </TableBody>
 
                     {isUserNotFound && (

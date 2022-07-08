@@ -8,6 +8,7 @@ import MUIRichTextEditor from "mui-rte";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { Editor } from "@tinymce/tinymce-react";
+import ImageCropperModal from "../layouts/dashboard/ImageCropperModal";
 
 // material
 import {
@@ -62,6 +63,8 @@ import axios from "axios";
 // ----------------------------------------------------------------------
 
 const defaultTheme = createTheme();
+
+
 
 Object.assign(defaultTheme, {
   overrides: {
@@ -142,6 +145,7 @@ export default function EditPost() {
 
   const { categories } = useSelector((state) => state.category);
   const { loading: updateLoading, posts } = useSelector((state) => state.post);
+  const [isOpenCrop, setIsOpenCrop] = useState(false);
 
   const dispatch = useDispatch();
   const editorRef = useRef(null);
@@ -181,6 +185,17 @@ export default function EditPost() {
     console.log(filtered);
     setCategs(filtered);
   }, [categories]);
+
+  const onOpenCropModal = (file) => {
+    const previewImage = URL.createObjectURL(file);
+
+    setThumbnail({ src: previewImage, loading: false });
+    setIsOpenCrop(true);
+  };
+  const onCloseCropModal = (_, reason) => {
+    setIsOpenCrop(false)
+    console.log(reason)
+  };
 
   const CreatePostSchema = Yup.object().shape({
     category: Yup.string().required("Выберите категорию"),
@@ -416,7 +431,7 @@ export default function EditPost() {
                           aria-describedby="thumbnail"
                           {...getFieldProps("thumbnail")}
                           onChange={(e) => {
-                            uploadThumbnail(e.target.files[0]);
+                            onOpenCropModal(e.target.files[0]);
                             getFieldProps("thumbnail").onChange(e);
                           }}
                         />
@@ -734,6 +749,12 @@ export default function EditPost() {
           </Form>
         </FormikProvider>
       </Container>
+      <ImageCropperModal
+        open={isOpenCrop}
+        onClose={onCloseCropModal}
+        image={thumbnail}
+        onUpload={uploadThumbnail}
+      />
     </Page>
   );
 }
