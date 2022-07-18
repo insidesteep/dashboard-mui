@@ -4,13 +4,15 @@ import category from "./category";
 import post from "./post";
 import photogallery from "./photogallery";
 import videogallery from "./videogallery";
+import banner from "./banner";
 
 const reducers = combineReducers({
   auth,
   category,
   post,
   photogallery,
-  videogallery
+  videogallery,
+  banner
 });
 
 export default reducers;

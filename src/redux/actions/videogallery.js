@@ -72,27 +72,31 @@ export const videogalleryDeleteSuccess = (videos) => {
   };
 };
 
-export const videogalleryCreateFailure = () => {
+export const videogalleryCreateFailure = (error) => {
   return {
     type: VIDEOGALLERY_CREATE_FAILURE,
+    payload: error,
   };
 };
 
-export const videogalleryUpdateFailure = () => {
+export const videogalleryUpdateFailure = (error) => {
   return {
     type: VIDEOGALLERY_UPDATE_FAILURE,
+    payload: error,
   };
 };
 
-export const videogalleryListFailure = () => {
+export const videogalleryListFailure = (error) => {
   return {
     type: VIDEOGALLERY_LIST_FAILURE,
+    payload: error,
   };
 };
 
-export const videogalleryDeleteFailure = () => {
+export const videogalleryDeleteFailure = (error) => {
   return {
     type: VIDEOGALLERY_DELETE_FAILURE,
+    payload: error,
   };
 };
 

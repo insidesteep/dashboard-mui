@@ -34,6 +34,8 @@ import {
   InputLabel,
   FormHelperText,
   Input,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Image } from "@mui/icons-material";
 import { TabPanel, TabList, TabContext, LoadingButton } from "@mui/lab";
@@ -140,14 +142,30 @@ export default function User() {
   const [thumbnail, setThumbnail] = useState({ src: "", loading: false });
   const [isOpenCrop, setIsOpenCrop] = useState(false);
 
+  const [error, setError] = useState({
+    state: false,
+    message: "",
+  });
+
   const { categories } = useSelector((state) => state.category);
-  const { loading: createLoading } = useSelector((state) => state.post);
+  const { loading: createLoading, error: createError } = useSelector(
+    (state) => state.post
+  );
 
   const dispatch = useDispatch();
   const editorRef = useRef(null);
   const navigate = useNavigate();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (createError.state) {
+      setError(createError);
+    } else {
+      setError({
+        state: false,
+        message: "",
+      });
+    }
+  }, [createError]);
 
   const onOpenCropModal = (file) => {
     const previewImage = URL.createObjectURL(file);
@@ -164,6 +182,14 @@ export default function User() {
     titleEn: Yup.string().required("Заполните поле"),
     thumbnail: Yup.mixed().transform((value) => console.log(value)),
   });
+
+  console.log(createError, error);
+  const onHideAlert = () => {
+    setError({
+      state: false,
+      message: "",
+    });
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -710,6 +736,16 @@ export default function User() {
         image={thumbnail}
         onUpload={uploadThumbnail}
       />
+      <Snackbar
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+        open={error.state}
+        autoHideDuration={6000}
+        onClose={onHideAlert}
+      >
+        <Alert onClose={onHideAlert} severity="error" sx={{ width: "100%" }}>
+          {error.message}
+        </Alert>
+      </Snackbar>
     </Page>
   );
 }

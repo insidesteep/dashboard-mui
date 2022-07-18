@@ -31,7 +31,7 @@ export function* videogalleryCreate() {
       yield cb();
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(videogalleryCreateFailure());
+      yield put(videogalleryCreateFailure(error.response.data.message || ""));
     }
   });
 }
@@ -47,7 +47,7 @@ export function* videogalleryUpdate() {
       yield cb();
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(videogalleryUpdateFailure());
+      yield put(videogalleryUpdateFailure(error.response.data.message || ""));
     }
   });
 }
@@ -60,7 +60,7 @@ export function* videogalleryDelete() {
       yield put(videogalleryDeleteSuccess(videos));
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(videogalleryDeleteFailure());
+      yield put(videogalleryDeleteFailure(error.response.data.message || ""));
     }
   });
 }
@@ -73,7 +73,7 @@ export function* videogalleryList() {
       yield put(videogalleryListSuccess(videos));
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(videogalleryListFailure());
+      yield put(videogalleryListFailure(error.response.data.message || ""));
     }
   });
 }

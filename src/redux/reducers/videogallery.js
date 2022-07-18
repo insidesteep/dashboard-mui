@@ -15,7 +15,10 @@ import {
 
 const initState = {
   loading: false,
-  error: false,
+  error: {
+    state: false,
+    message: "",
+  },
   videogallery: {
     loading: false,
     data: {
@@ -33,7 +36,10 @@ const videogallery = (state = initState, action) => {
       return {
         ...state,
         loading: false,
-        error: false,
+        error: {
+          state: false,
+          message: "",
+        },
         videogallery: {
           ...state.videogallery,
           data: action.payload,
@@ -55,7 +61,10 @@ const videogallery = (state = initState, action) => {
       return {
         ...state,
         loading: false,
-        error: true,
+        error: {
+          state: true,
+          message: action.payload,
+        },
       };
 
     case VIDEOGALLERY_LIST_FAILURE:
@@ -64,6 +73,10 @@ const videogallery = (state = initState, action) => {
         videogallery: {
           ...state.videogallery,
           loading: false,
+        },
+        error: {
+          state: true,
+          message: action.payload,
         },
       };
 

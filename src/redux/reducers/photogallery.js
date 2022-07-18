@@ -8,6 +8,9 @@ import {
   PHOTOGALLERY_DELETE_SUCCESS,
   PHOTOGALLERY_DELETE_FAILURE,
   SHOW_LOADING_PHOTOGALLERY_DELETE,
+  PHOTOGALLERY_UPDATE_SUCCESS,
+  PHOTOGALLERY_UPDATE_FAILURE,
+  SHOW_LOADING_PHOTOGALLERY_UPDATE,
 } from "../constants/photogallery";
 
 const initState = {
@@ -25,11 +28,15 @@ const initState = {
 const photogallery = (state = initState, action) => {
   switch (action.type) {
     case PHOTOGALLERY_CREATE_SUCCESS:
+    case PHOTOGALLERY_UPDATE_SUCCESS:
     case PHOTOGALLERY_DELETE_SUCCESS:
       return {
         ...state,
         loading: false,
-        error: false,
+        error: {
+          state: false,
+          message: "",
+        },
         photogallery: {
           ...state.photogallery,
           data: action.payload,
@@ -46,11 +53,15 @@ const photogallery = (state = initState, action) => {
       };
 
     case PHOTOGALLERY_CREATE_FAILURE:
+    case PHOTOGALLERY_UPDATE_FAILURE:
     case PHOTOGALLERY_DELETE_FAILURE:
       return {
         ...state,
         loading: false,
-        error: true,
+        error: {
+          state: true,
+          message: action.payload,
+        },
       };
 
     case PHOTOGALLERY_LIST_FAILURE:
@@ -60,9 +71,14 @@ const photogallery = (state = initState, action) => {
           ...state.photogallery,
           loading: false,
         },
+        error: {
+          state: true,
+          message: action.payload,
+        },
       };
 
     case SHOW_LOADING_PHOTOGALLERY_CREATE:
+    case SHOW_LOADING_PHOTOGALLERY_UPDATE:
     case SHOW_LOADING_PHOTOGALLERY_DELETE:
       return {
         ...state,

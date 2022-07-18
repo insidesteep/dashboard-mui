@@ -34,6 +34,8 @@ import {
   InputLabel,
   FormHelperText,
   Input,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Image } from "@mui/icons-material";
 import { TabPanel, TabList, TabContext, LoadingButton } from "@mui/lab";
@@ -63,8 +65,6 @@ import axios from "axios";
 // ----------------------------------------------------------------------
 
 const defaultTheme = createTheme();
-
-
 
 Object.assign(defaultTheme, {
   overrides: {
@@ -143,8 +143,17 @@ export default function EditPost() {
   const [categs, setCategs] = useState([]);
   const [thumbnail, setThumbnail] = useState({ src: "", loading: false });
 
+  const [error, setError] = useState({
+    state: false,
+    message: "",
+  });
+
   const { categories } = useSelector((state) => state.category);
-  const { loading: updateLoading, posts } = useSelector((state) => state.post);
+  const {
+    loading: updateLoading,
+    posts,
+    error: editError,
+  } = useSelector((state) => state.post);
   const [isOpenCrop, setIsOpenCrop] = useState(false);
 
   const dispatch = useDispatch();
@@ -186,6 +195,17 @@ export default function EditPost() {
     setCategs(filtered);
   }, [categories]);
 
+  useEffect(() => {
+    if (editError.state) {
+      setError(editError);
+    } else {
+      setError({
+        state: false,
+        message: "",
+      });
+    }
+  }, [editError]);
+
   const onOpenCropModal = (file) => {
     const previewImage = URL.createObjectURL(file);
 
@@ -193,8 +213,15 @@ export default function EditPost() {
     setIsOpenCrop(true);
   };
   const onCloseCropModal = (_, reason) => {
-    setIsOpenCrop(false)
-    console.log(reason)
+    setIsOpenCrop(false);
+    console.log(reason);
+  };
+
+  const onHideAlert = () => {
+    setError({
+      state: false,
+      message: "",
+    });
   };
 
   const CreatePostSchema = Yup.object().shape({
@@ -755,6 +782,16 @@ export default function EditPost() {
         image={thumbnail}
         onUpload={uploadThumbnail}
       />
+      <Snackbar
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+        open={error.state}
+        autoHideDuration={6000}
+        onClose={onHideAlert}
+      >
+        <Alert onClose={onHideAlert} severity="error" sx={{ width: "100%" }}>
+          {error.message}
+        </Alert>
+      </Snackbar>
     </Page>
   );
 }

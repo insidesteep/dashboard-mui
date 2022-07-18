@@ -19,6 +19,7 @@ import PhotoGalleryList from "./pages/PhotoGalleryList";
 import VideoGalleryList from "./pages/VideoGalleryList";
 import CreatePost from "./pages/CreatePost";
 import EditPost from "./pages/EditPost";
+import Banners from "./pages/Banners";
 import { authorization, showLoading } from "./redux/actions/auth";
 import { AUTH_TOKEN } from "./redux/constants/auth";
 
@@ -61,6 +62,7 @@ export default function Router() {
         { path: "videogalleries", element: <VideoGalleryList /> },
         { path: "posts/create", element: <CreatePost /> },
         { path: "posts/edit/:postId", element: <EditPost /> },
+        { path: "banners", element: <Banners /> },
       ],
     },
     {

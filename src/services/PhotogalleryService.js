@@ -17,6 +17,14 @@ Photogallery.list = (page = 1) => {
   });
 };
 
+Photogallery.update = (data) => {
+  return fetch({
+    url: `/api/gallery/update`,
+    method: "post",
+    data,
+  });
+};
+
 Photogallery.delete = (gallery_id) => {
   return fetch({
     url: "/api/gallery/delete",

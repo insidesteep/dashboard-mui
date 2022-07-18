@@ -8,9 +8,13 @@ import {
   PHOTOGALLERY_LIST,
   PHOTOGALLERY_LIST_FAILURE,
   PHOTOGALLERY_LIST_SUCCESS,
+  PHOTOGALLERY_UPDATE,
+  PHOTOGALLERY_UPDATE_FAILURE,
+  PHOTOGALLERY_UPDATE_SUCCESS,
   SHOW_LOADING_PHOTOGALLERY_CREATE,
   SHOW_LOADING_PHOTOGALLERY_DELETE,
   SHOW_LOADING_PHOTOGALLERY_LIST,
+  SHOW_LOADING_PHOTOGALLERY_UPDATE,
 } from "../constants/photogallery";
 
 export const photogalleryCreate = (data, cb) => {
@@ -24,6 +28,13 @@ export const photogalleryList = (page) => {
   return {
     type: PHOTOGALLERY_LIST,
     payload: page,
+  };
+};
+
+export const photogalleryUpdate = (data, cb) => {
+  return {
+    type: PHOTOGALLERY_UPDATE,
+    payload: { data, cb },
   };
 };
 
@@ -48,6 +59,13 @@ export const photogalleryListSuccess = (galleries) => {
   };
 };
 
+export const photogalleryUpdateSuccess = (galleries) => {
+  return {
+    type: PHOTOGALLERY_UPDATE_SUCCESS,
+    payload: galleries,
+  };
+};
+
 export const photogalleryDeleteSuccess = (galleries) => {
   return {
     type: PHOTOGALLERY_DELETE_SUCCESS,
@@ -55,21 +73,31 @@ export const photogalleryDeleteSuccess = (galleries) => {
   };
 };
 
-export const photogalleryCreateFailure = () => {
+export const photogalleryCreateFailure = (error) => {
   return {
     type: PHOTOGALLERY_CREATE_FAILURE,
+    payload: error,
   };
 };
 
-export const photogalleryListFailure = () => {
+export const photogalleryListFailure = (error) => {
   return {
     type: PHOTOGALLERY_LIST_FAILURE,
+    payload: error,
   };
 };
 
-export const photogalleryDeleteFailure = () => {
+export const photogalleryUpdateFailure = (error) => {
+  return {
+    type: PHOTOGALLERY_UPDATE_FAILURE,
+    payload: error,
+  };
+};
+
+export const photogalleryDeleteFailure = (error) => {
   return {
     type: PHOTOGALLERY_DELETE_FAILURE,
+    payload: error,
   };
 };
 
@@ -82,6 +110,12 @@ export const showLoadingPhotogalleryCreate = () => {
 export const showLoadingPhotogalleryList = () => {
   return {
     type: SHOW_LOADING_PHOTOGALLERY_LIST,
+  };
+};
+
+export const showLoadingPhotogalleryUpdate = () => {
+  return {
+    type: SHOW_LOADING_PHOTOGALLERY_UPDATE,
   };
 };
 

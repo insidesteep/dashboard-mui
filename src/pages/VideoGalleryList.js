@@ -17,6 +17,8 @@ import {
   Typography,
   TableContainer,
   TablePagination,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 // components
@@ -105,13 +107,31 @@ export default function User() {
   const [isEdit, setIsEdit] = useState(false);
   const [videoId, setVideoId] = useState(null);
 
-  const { videogallery } = useSelector((state) => state.videogallery);
+  const [error, setError] = useState({
+    state: false,
+    message: "",
+  });
+
+  const { videogallery, error: videoError } = useSelector(
+    (state) => state.videogallery
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(showLoadingvideogalleryList());
     dispatch(videogalleryList());
   }, []);
+
+  useEffect(() => {
+    if (videoError.state) {
+      setError(videoError);
+    } else {
+      setError({
+        state: false,
+        message: "",
+      });
+    }
+  }, [videoError]);
 
   const onOpen = () => {
     setOpen(true);
@@ -129,6 +149,13 @@ export default function User() {
   const onCloseEditModal = () => {
     setIsEdit(false);
     setVideoId(null);
+  };
+
+  const onHideAlert = () => {
+    setError({
+      state: false,
+      error: "",
+    });
   };
 
   const handleRequestSort = (event, property) => {
@@ -317,6 +344,16 @@ export default function User() {
         onClose={onCloseEditModal}
         videoId={videoId}
       />
+      <Snackbar
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+        open={error.state}
+        autoHideDuration={6000}
+        onClose={onHideAlert}
+      >
+        <Alert onClose={onHideAlert} severity="error" sx={{ width: "100%" }}>
+          {error.message}
+        </Alert>
+      </Snackbar>
     </Page>
   );
 }

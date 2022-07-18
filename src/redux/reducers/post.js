@@ -15,7 +15,10 @@ import {
 
 const initState = {
   loading: false,
-  error: false,
+  error: {
+    state: false,
+    message: "",
+  },
   posts: {
     loading: false,
     data: {
@@ -33,7 +36,10 @@ const post = (state = initState, action) => {
       return {
         ...state,
         loading: false,
-        error: false,
+        error: {
+          state: false,
+          message: "",
+        },
         posts: {
           ...state.posts,
           data: action.payload,
@@ -55,7 +61,10 @@ const post = (state = initState, action) => {
       return {
         ...state,
         loading: false,
-        error: true,
+        error: {
+          state: true,
+          message: action.payload,
+        },
       };
 
     case POST_LIST_FAILURE:
@@ -64,6 +73,10 @@ const post = (state = initState, action) => {
         posts: {
           ...state.posts,
           loading: false,
+        },
+        error: {
+          state: true,
+          message: action.payload,
         },
       };
 

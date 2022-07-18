@@ -31,7 +31,8 @@ export function* postCreate() {
       yield cb();
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(postCreateFailure());
+      console.log(error);
+      yield put(postCreateFailure(error.response.data.message || ""));
     }
   });
 }
@@ -47,7 +48,7 @@ export function* postUpdate() {
       yield cb();
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(postUpdateeFailure());
+      yield put(postUpdateeFailure(error.response.data.message || ""));
     }
   });
 }
@@ -60,7 +61,7 @@ export function* postDelete() {
       yield put(postDeleteSuccess(posts));
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(postDeleteFailure());
+      yield put(postDeleteFailure(error.response.data.message || ""));
     }
   });
 }

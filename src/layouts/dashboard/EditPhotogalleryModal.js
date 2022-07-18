@@ -24,14 +24,15 @@ import * as Yup from "yup";
 import { useFormik, Form, FormikProvider } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  photogalleryCreate,
-  showLoadingPhotogalleryCreate,
+  photogalleryUpdate,
+  showLoadingPhotogalleryUpdate,
 } from "../../redux/actions/photogallery";
 import { API_BASE_URL } from "src/config/AppConfig";
 
 const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
+  const [prevImages, setPrevImages] = useState([]);
 
   const { loading, photogallery } = useSelector((state) => state.photogallery);
 
@@ -53,26 +54,13 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
 
       const urls = gallery.gallery.map((g) => ({
         name: g,
-        src: `${API_BASE_URL}images${g}`,
+        src: g,
       }));
 
+      setPrevImages(urls);
       setImageURLs(urls);
     }
   }, [galleryId]);
-
-  useEffect(() => {
-    if (images > 1) return;
-
-    const newImageURLs = [];
-
-    images.forEach((img) =>
-      newImageURLs.push({
-        name: img.name,
-        src: URL.createObjectURL(img),
-      })
-    );
-    setImageURLs(newImageURLs);
-  }, [images]);
 
   const handleChangeImages = async (e) => {
     const correctImages = [];
@@ -99,8 +87,23 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
       })
     );
 
-    setImages([...correctImages]);
+    const newImageURLs = [];
+
+    correctImages.forEach((img) =>
+      newImageURLs.push({
+        name: img.name,
+        src: URL.createObjectURL(img),
+      })
+    );
+
+    console.log(correctImages, newImageURLs);
+
+    setImageURLs((prev) => [...prev, ...newImageURLs]);
+
+    setImages((prev) => [...prev, ...correctImages]);
   };
+
+  console.log(imageURLs);
 
   const handleClose = () => {
     if (!loading) {
@@ -125,18 +128,22 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
     },
     validationSchema: CreatePhotogallerySchema,
     onSubmit: (values) => {
-      if (images.length) {
-        const formData = new FormData();
+      const formData = new FormData();
+      formData.append("gallery_id", galleryId);
+      formData.append("tittle_uz", values.titleUz);
+      formData.append("tittle_ru", values.titleUz);
+      formData.append("tittle_en", values.titleEn);
 
-        formData.append("tittle_uz", values.titleUz);
-        formData.append("tittle_ru", values.titleUz);
-        formData.append("tittle_en", values.titleEn);
+      imageURLs.forEach(
+        (img) =>
+          !img.src.includes("blob") &&
+          formData.append("gallery_link[]", img.src)
+      );
 
-        images.forEach((img) => formData.append("gallery_images[]", img));
+      images.forEach((img) => formData.append("gallery_images[]", img));
 
-        dispatch(showLoadingPhotogalleryCreate());
-        dispatch(photogalleryCreate(formData, handleClose));
-      }
+      dispatch(showLoadingPhotogalleryUpdate());
+      dispatch(photogalleryUpdate(formData, handleClose));
     },
   });
 
@@ -147,12 +154,11 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
     const urls = imageURLs.filter((img) => img.name != name);
     const imgs = images.filter((img) => img.name != name);
 
-    console.log(urls, imgs);
-
     setImages(imgs);
     setImageURLs(urls);
   };
 
+  console.log(imageURLs, images);
   return (
     <Dialog open={open} onClose={handleClose} fullWidth>
       <FormikProvider value={formik}>
@@ -227,35 +233,50 @@ const EditPhotogalleryModal = ({ open, onClose, galleryId }) => {
                 </Button>
               </label>
               <ImageList cols={3}>
-                {imageURLs.map(({ name, src }) => (
-                  <ImageListItem key={src}>
-                    <img
-                      src={`${src}`}
-                      srcSet={`${src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                      alt={src}
-                      loading="lazy"
-                    />
-                    <ImageListItemBar
-                      position="top"
-                      actionIcon={
-                        <IconButton
-                          onClick={() => onRemoveImg(name)}
-                          sx={{ color: "white" }}
-                          aria-label={`star ${src}`}
-                        >
-                          <DeleteOutline />
-                        </IconButton>
-                      }
-                    />
-                  </ImageListItem>
-                ))}
+                {imageURLs.map(
+                  ({ name, src }) =>
+                    console.log(name) || (
+                      <ImageListItem key={src}>
+                        <img
+                          src={
+                            src.includes("blob")
+                              ? src
+                              : `${API_BASE_URL}images${src}`
+                          }
+                          srcSet={
+                            src.includes("blob")
+                              ? `${src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`
+                              : `${API_BASE_URL}images${src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`
+                          }
+                          alt={
+                            src.includes("blob")
+                              ? src
+                              : `${API_BASE_URL}images${src}`
+                          }
+                          loading="lazy"
+                        />
+                        <ImageListItemBar
+                          position="top"
+                          actionIcon={
+                            <IconButton
+                              onClick={() => onRemoveImg(name)}
+                              sx={{ color: "white" }}
+                              aria-label={`star ${src}`}
+                            >
+                              <DeleteOutline />
+                            </IconButton>
+                          }
+                        />
+                      </ImageListItem>
+                    )
+                )}
               </ImageList>
             </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Закрыть</Button>
             <LoadingButton type="submit" variant="contained">
-              Создать
+              Обновить
             </LoadingButton>
           </DialogActions>
         </Form>

@@ -3,6 +3,7 @@ import {
   PHOTOGALLERY_CREATE,
   PHOTOGALLERY_DELETE,
   PHOTOGALLERY_LIST,
+  PHOTOGALLERY_UPDATE,
 } from "../constants/photogallery";
 import {
   photogalleryCreateSuccess,
@@ -11,6 +12,8 @@ import {
   photogalleryListFailure,
   photogalleryDeleteSuccess,
   photogalleryDeleteFailure,
+  photogalleryUpdateSuccess,
+  photogalleryUpdateFailure,
 } from "../actions/photogallery";
 
 // import { setOrganization } from "../actions/Organization";
@@ -28,7 +31,7 @@ export function* photogalleryCreate() {
       yield cb();
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(photogalleryCreateFailure());
+      yield put(photogalleryCreateFailure(error.response.data.message || ""));
     }
   });
 }
@@ -41,7 +44,23 @@ export function* photogalleryDelete() {
       yield put(photogalleryDeleteSuccess(galleries));
     } catch (error) {
       //   yield put(showAuthMessage("error", error.response.data.message));\
-      yield put(photogalleryDeleteFailure());
+      yield put(photogalleryDeleteFailure(error.response.data.message || ""));
+    }
+  });
+}
+
+export function* photogalleryUpdate() {
+  yield takeEvery(PHOTOGALLERY_UPDATE, function* ({ payload }) {
+    try {
+      const { data, cb } = payload;
+
+      const categories = yield call(PhotogalleryService.update, data);
+
+      yield put(photogalleryUpdateSuccess(categories));
+      cb();
+    } catch (error) {
+      //   yield put(showAuthMessage("error", error.response.data.message));\
+      yield put(photogalleryUpdateFailure(error.response.data.message || ""));
     }
   });
 }
@@ -64,5 +83,6 @@ export default function* rootSaga() {
     fork(photogalleryCreate),
     fork(photogalleryList),
     fork(photogalleryDelete),
+    fork(photogalleryUpdate),
   ]);
 }

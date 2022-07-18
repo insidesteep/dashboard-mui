@@ -26,6 +26,11 @@ const navConfig = [
     path: "/dashboard/videogalleries",
     icon: getIcon("clarity:video-gallery-solid"),
   },
+  {
+    title: "Баннеры",
+    path: "/dashboard/banners",
+    icon: getIcon("ep:data-board"),
+  },
 ];
 
 export default navConfig;

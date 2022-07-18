@@ -72,27 +72,32 @@ export const postUpdateSuccess = (posts) => {
   };
 };
 
-export const postCreateFailure = () => {
+export const postCreateFailure = (error) => {
   return {
     type: POST_CREATE_FAILURE,
+    payload: error,
   };
 };
 
-export const postListFailure = () => {
+export const postListFailure = (error) => {
   return {
     type: POST_LIST_FAILURE,
+    type: POST_DELETE_FAILURE,
+    payload: error,
   };
 };
 
-export const postDeleteFailure = () => {
+export const postDeleteFailure = (error) => {
   return {
     type: POST_DELETE_FAILURE,
+    payload: error,
   };
 };
 
-export const postUpdateeFailure = () => {
+export const postUpdateeFailure = (error) => {
   return {
     type: POST_UPDATE_FAILURE,
+    payload: error,
   };
 };
 

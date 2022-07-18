@@ -36,16 +36,11 @@ import {
   UserMoreMenu,
 } from "../sections/@dashboard/user";
 // mock
-import CreatePhotogalleryModal from "../layouts/dashboard/CreatePhotogalleryModal";
-import EditPhotogalleryModal from "../layouts/dashboard/EditPhotogalleryModal";
+import CreateBannerModal from "../layouts/dashboard/CreateBannerModal";
+// import EditbannersModal from "../layouts/dashboard/EditbannersModal";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  showLoadingPhotogalleryList,
-  photogalleryList,
-  showLoadingPhotogalleryDelete,
-  photogalleryDelete,
-} from "../redux/actions/photogallery";
+import { showLoadingBannerList, bannerList } from "../redux/actions/banner";
 import { API_BASE_URL } from "src/config/AppConfig";
 
 // ----------------------------------------------------------------------
@@ -114,26 +109,26 @@ export default function User() {
     message: "",
   });
 
-  const { photogallery, error: galleryError } = useSelector(
-    (state) => state.photogallery
+  const { banners, error: bannerError } = useSelector(
+    (state) => state.banner
   );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(showLoadingPhotogalleryList());
-    dispatch(photogalleryList(page + 1));
+    dispatch(showLoadingBannerList());
+    dispatch(bannerList(page + 1));
   }, [page]);
 
   useEffect(() => {
-    if (galleryError.state) {
-      setError(galleryError);
+    if (bannerError.state) {
+      setError(bannerError);
     } else {
       setError({
         state: false,
         message: "",
       });
     }
-  }, [galleryError]);
+  }, [bannerError]);
 
   const onOpen = () => {
     setOpen(true);
@@ -141,16 +136,6 @@ export default function User() {
 
   const onClose = () => {
     setOpen(false);
-  };
-
-  const onOpenEditModal = (id) => {
-    setEditID(id);
-    setIsEdit(true);
-  };
-
-  const onCloseEditModal = () => {
-    setIsEdit(false);
-    setEditID(null);
   };
 
   const onHideAlert = () => {
@@ -168,7 +153,7 @@ export default function User() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = photogallery.data.option.map((n) => n.tittle_uz);
+      const newSelecteds = banners.data.map((n) => n.tittle_uz);
       setSelected(newSelecteds);
       return;
     }
@@ -208,21 +193,16 @@ export default function User() {
 
   const emptyRows =
     page > 0
-      ? Math.max(0, (1 + page) * rowsPerPage - photogallery.data.option.length)
+      ? Math.max(0, (1 + page) * rowsPerPage - banners.data.length)
       : 0;
 
   const filteredUsers = applySortFilter(
-    photogallery.data.option,
+    banners.data,
     getComparator(order, orderBy),
     filterName
   );
 
   const isUserNotFound = filteredUsers.length === 0;
-
-  const onDelete = (id) => {
-    dispatch(showLoadingPhotogalleryDelete());
-    dispatch(photogalleryDelete(id));
-  };
 
   return (
     <Page name="User">
@@ -234,7 +214,7 @@ export default function User() {
           mb={5}
         >
           <Typography variant="h4" gutterBottom>
-            Фотогалереи
+            Баннеры
           </Typography>
           <Button
             variant="contained"
@@ -243,7 +223,7 @@ export default function User() {
             startIcon={<Iconify icon="eva:plus-fill" />}
             onClick={onOpen}
           >
-            Создать галлерея
+            Создать баннер
           </Button>
         </Stack>
 
@@ -252,10 +232,10 @@ export default function User() {
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
-            placeholder="Поиск галереи ..."
+            placeholder="Поиск баннеров ..."
           />
 
-          {!photogallery.data.loading ? (
+          {!banners.data.loading ? (
             <>
               <Scrollbar>
                 <TableContainer sx={{ minWidth: 800 }}>
@@ -264,7 +244,7 @@ export default function User() {
                       order={order}
                       orderBy={orderBy}
                       headLabel={TABLE_HEAD}
-                      rowCount={photogallery.data.all_items}
+                      rowCount={banners.data.all_items}
                       numSelected={selected.length}
                       onRequestSort={handleRequestSort}
                       onSelectAllClick={handleSelectAllClick}
@@ -310,12 +290,6 @@ export default function User() {
                                   ))}
                                 </AvatarGroup>
                               </TableCell>
-                              <TableCell align="right">
-                                <UserMoreMenu
-                                  onDelete={() => onDelete(gallery_id)}
-                                  onEdit={() => onOpenEditModal(gallery_id)}
-                                />
-                              </TableCell>
                             </TableRow>
                           );
                         })}
@@ -334,7 +308,7 @@ export default function User() {
                 </TableContainer>
               </Scrollbar>
 
-              {photogallery.data.all_items && (
+              {banners.data.all_items && (
                 <TablePagination
                   rowsPerPageOptions={[]}
                   labelDisplayedRows={({ from, to, count, page }) =>
@@ -343,7 +317,7 @@ export default function User() {
                     }`
                   }
                   component="div"
-                  count={photogallery.data.all_items}
+                  count={banners.data.all_items}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}
@@ -359,17 +333,13 @@ export default function User() {
               spacing={2}
             >
               <CircularProgress />
-              <Typography>Загрузка фотогалереи ...</Typography>
+              <Typography>Загрузка баннеров ...</Typography>
             </Stack>
           )}
         </Card>
       </Container>
-      <CreatePhotogalleryModal open={open} onClose={onClose} />
-      <EditPhotogalleryModal
-        open={isEdit}
-        onClose={onCloseEditModal}
-        galleryId={editID}
-      />
+      <CreateBannerModal open={open} onClose={onClose} />
+
       <Snackbar
         anchorOrigin={{ horizontal: "center", vertical: "top" }}
         open={error.state}
